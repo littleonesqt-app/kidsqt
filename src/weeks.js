@@ -367,7 +367,7 @@ var WK_ACTIONS={
 };
 Object.assign(EN,{
  '주간 선택':'Choose a week','{w} 묵상 보기':'Open {w}','{w} 미리 보기':'Preview {w}','이번 주로 돌아가기':'Back to this week',
- '가정에서 함께하는 묵상':'Devotions to share at home','IAM 키즈 묵상':'IAM Kids Devotion','IAM Church 주일학교':'IAM Church Sunday School',
+ '가정에서 함께하는 묵상':'Devotions to share at home','리틀원스묵상':'Little ones QT','Little ones QT':'Little ones QT','IAM Church 주일학교':'IAM Church Sunday School',
  '그림 그리기':'Draw','닫고 묵상으로 돌아가기':'Close and go back to the QT','여기에 그림을 그려 보세요':'Draw your picture here',
  '바울이 편지를 쓰는 모습을 그려 보세요':'Draw Paul writing his letter','그림을 저장했어요':'Picture saved!','그린 그림을 저장할까요?':'Save your picture?',
  '눌러서 그림을 그려 보세요':'Tap to draw your picture','손가락, 애플펜슬, 마우스로 그릴 수 있어요':'Draw with your finger, Apple Pencil or a mouse',

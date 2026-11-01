@@ -52,7 +52,7 @@ const ANSWER = {
   }
   if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
   await p.waitForSelector('.daygrid');
-  ok((await text(p, 'main')).includes('#32'), 'week #32');
+  ok((await text(p, 'main')).includes('10월 4주'), 'week 10월 4주');
 
   console.log('\nEach day: QT → celebration → calendar flower');
   for (const [k, answer] of Object.entries(ANSWER)) {
@@ -69,7 +69,15 @@ const ANSWER = {
   const gift = await p.$('[data-a=gift]');
   ok(!!gift, 'Friday: the gift is ready on the calendar');
   if (gift) { await gift.click(); await p.waitForTimeout(400); }
-  ok(/선물/.test(await text(p, 'main')) , 'gift claimed (wardrobe / gift message)');
+  ok(!!(await p.$('#giftpick')) && (await p.$$('#giftpick [data-a=giftSel]')).length >= 2, 'the gift screen asks to pick ONE item');
+  ok(!!(await p.$('[data-a=giftConfirm][aria-disabled=true]')), 'cannot confirm before choosing');
+  const gid = await p.$eval('#giftpick [data-a=giftSel]', e => e.getAttribute('data-v'));
+  await p.click('#giftpick [data-a=giftSel]'); await p.waitForTimeout(150);
+  await shot(p, 'w32_giftpick');
+  await p.click('[data-a=giftConfirm]'); await p.waitForTimeout(400);
+  ok(!(await p.$('#giftpick')) && /선물/.test(await text(p, 'main')), 'gift claimed (wardrobe / gift message)');
+  const tiles = await p.$$eval('#wardrobe .tile', t => ({ n: t.length, locked: t.filter(x => x.classList.contains('locked')).length }));
+  ok(tiles.locked === tiles.n - 2 || tiles.locked === tiles.n - 1, 'only the chosen item (' + gid + ') is unlocked in the wardrobe, the others stay locked (' + tiles.locked + '/' + tiles.n + ' locked)');
 
   console.log('\nThank-you note → flower and sticker');
   await navTo(p, 'thanks');

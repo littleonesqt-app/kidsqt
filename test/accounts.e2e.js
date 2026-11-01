@@ -114,13 +114,14 @@ async function doQT(p, key) {
   await ipad.evaluate(() => document.querySelector('nav [data-v="home"]').click()); await ipad.waitForTimeout(80);
   await ipad.evaluate(() => document.querySelector('[data-a="go"][data-v="calendar"]').click()); await ipad.waitForTimeout(120);
   await click(ipad, '[data-a=gift] >> nth=0'); await ipad.waitForTimeout(300);
+  await click(ipad, '[data-a=giftSel][data-v=star]'); await click(ipad, '[data-a=giftConfirm]'); await ipad.waitForTimeout(200);
   await click(ipad, '[data-a=pickItem][data-v=star]'); await click(ipad, '[data-a=wearItem]');
   await click(ipad, '[data-a=setCat][data-v=hair]'); await click(ipad, '[data-a=pickItem][data-v=h_default]');
   await ipad.evaluate(() => scrollTo(0, 0)); await click(ipad, '.langtog [data-v=en]');
   await settle(ipad);
   st = await synced(ipad);
   ok(Object.keys(st.state.days).length === 5, 'server has all 5 days');
-  ok(Object.keys(st.state.claimed).length === 1 && st.state.unlocked.includes('star'), 'gift claimed once, shirts unlocked');
+  ok(Object.keys(st.state.claimed).length === 1 && st.state.unlocked.includes('star') && !st.state.unlocked.includes('heart') && st.state.unlocked.length === 2, 'gift claimed once: only the ONE chosen shirt is unlocked');
   ok(st.state.equipped === 'star' && st.state.outfit.shirt === 'star', 'avatar outfit saved');
   ok(st.state.lang === 'en' && st.state.gender === 'girl' && st.state.avatar === 3, 'language and profile picture saved');
   await shot(ipad, 'e2e_ipad_profile');

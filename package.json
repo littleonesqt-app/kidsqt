@@ -2,7 +2,7 @@
   "name": "iamkids-qt",
   "version": "1.0.0",
   "private": true,
-  "description": "IAM Church Sunday School daily QT app with username/password accounts and cloud saving",
+  "description": "Little ones QT daily devotion app with username/password accounts and cloud saving",
   "main": "server/index.js",
   "engines": { "node": ">=22.13" },
   "scripts": {
