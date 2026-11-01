@@ -2716,15 +2716,24 @@ function celArt(day){
  if(day==='thu')return '<span style="display:block;transform-origin:50% 100%;animation:bloom .8s ease-out both">'+flower(110)+'</span>';
  return '<svg width="140" height="96" viewBox="0 0 120 80" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-width="8" stroke-dasharray="170" style="animation:draw 1.4s ease-out both"><path d="M10 72a50 50 0 0 1 100 0" stroke="#F2A79E"/><path d="M20 72a40 40 0 0 1 80 0" stroke="#F8C548"/><path d="M30 72a30 30 0 0 1 60 0" stroke="#A9C66F"/><path d="M40 72a20 20 0 0 1 40 0" stroke="#B7A8EE"/></g><ellipse cx="14" cy="72" rx="14" ry="7" fill="#EDE7DE"/><ellipse cx="106" cy="72" rx="14" ry="7" fill="#EDE7DE"/><circle cx="60" cy="60" r="10" fill="#F28C3A"/><circle cx="56.5" cy="58.5" r="1.4" fill="#3A2620"/><circle cx="63.5" cy="58.5" r="1.4" fill="#3A2620"/><path d="M56.5 62.5q3.5 3 7 0" fill="none" stroke="#3A2620" stroke-width="1.4" stroke-linecap="round"/></svg>';
 }
-function renderLayer(){
+function layerOv(){
  var h='';
  if(ui.cel){var c=celL(ui.cel),dp='';['mon','tue','wed','thu','fri'].forEach(function(d,i){dp+='<button type="button" class="'+(ui.cel===d?'on':'')+'" data-a="celDay" data-v="'+d+'" aria-label="'+t('{d} 축하 미리 보기',{d:dayFull(i+1)})+'">'+dayL(i+1)+'</button>';});
   h+='<div class="overlay"><div class="fx" aria-hidden="true">'+fx(ui.cel)+'</div><div class="dialog" role="dialog" aria-modal="true" aria-label="'+c.title+'"><span class="chip" style="background:'+c.bg+';color:'+c.fg+'">'+c.chip+'</span><div style="height:112px;display:flex;align-items:center;justify-content:center">'+celArt(ui.cel)+'</div><h2 class="disp" style="font-size:27px;line-height:1.25">'+c.title+'</h2><div style="font-size:15px;line-height:1.6;color:#4A3730">'+c.msg+'</div>'+celThanks()+'<button type="button" class="btn dark" data-a="celCal" style="margin-top:10px;height:54px;font-size:19px">'+t('내 큐티 기록 보기')+''+arrow()+'</button><button type="button" class="ghost" data-a="celClose">'+t('문제 다시 보기')+'</button></div></div>';}
  else if(ui.reward&&view==='profile'){var r=reward(),rt='';r.items.forEach(function(id){rt+='<span style="width:46px;height:46px;border-radius:15px;background:#F3F0EA;display:flex;align-items:center;justify-content:center">'+itemThumb(slotOfItem(id)||'shirt',id,36)+'</span>';});
   h+='<div class="overlay"><div class="fx" aria-hidden="true">'+confetti()+'</div><div class="dialog" role="dialog" aria-modal="true" aria-label="'+t('이번 주 큐티 완료')+'"><div style="position:relative;width:120px;height:104px">'+star4(22,'#F8C548','position:absolute;left:0;top:8px;animation:twinkle 1.6s ease-in-out infinite')+star4(16,'#B7A8EE','position:absolute;right:2px;top:0;animation:twinkle 1.9s ease-in-out .4s infinite')+star4(18,'#F2A79E','position:absolute;right:8px;bottom:6px;animation:twinkle 1.7s ease-in-out .8s infinite')+'<span style="position:absolute;left:12px;top:4px">'+flower(96)+'</span></div><h2 class="disp" style="font-size:30px">'+t('해냈어요!')+'</h2><div style="font-size:15px;line-height:1.6;color:#4A3730">'+t('이번 주 큐티를 5일 모두 마쳤어요!')+'<br>'+t('아바타에게 새 티셔츠를 골라 주세요!')+'</div><div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center">'+rt+'</div><button type="button" class="btn dark" data-a="rewardGo" style="margin-top:8px;height:54px;font-size:19px">'+t('티셔츠 고르러 가기')+'</button><button type="button" class="ghost" data-a="rewardClose">'+t('나중에 고를게요')+'</button></div></div>';}
  if(ui.verse)h+=versePop();
- if(ui.toast)h+='<div class="toast" role="status">'+ui.toast+'</div>';
- document.getElementById('layer').innerHTML=h;
+ return h;
+}
+/* typing in the thank-you box changes the markup a little; that is not a reason to rebuild (and lose the keyboard) */
+function ovKey(h){return h.replace(/(<textarea id="celta"[^>]*>)[^<]*/,'$1').replace(/class="ntxt( can)?"/,'class="ntxt"').replace(/(data-a="celThank"[^>]*?)( hidden)?>/,'$1>');}
+/* the dialog is only rebuilt when it really changed, so a toast coming and going never replays its pop-in */
+function renderLayer(){
+ var ov=layerOv(),lay=document.getElementById('layer'),o=lay.querySelector('#ov'),tt=lay.querySelector('#tst');
+ if(!o||!tt){lay.innerHTML='<div id="ov"></div><div id="tst"></div>';o=lay.querySelector('#ov');tt=lay.querySelector('#tst');ui._ov=null;}
+ var key=ovKey(ov);
+ if(ui._ov!==key){o.innerHTML=ov;ui._ov=key;}
+ tt.innerHTML=ui.toast?'<div class="toast" role="status">'+ui.toast+'</div>':'';
  document.body.style.overflow=(ui.verse||ui.cel||(ui.reward&&view==='profile')||(typeof Ink!=='undefined'&&Ink&&Ink.isOpen()))?'hidden':'';
 }
 
@@ -3332,7 +3341,7 @@ var A={
  gift:function(wk){claimGift(wk);},giftSel:function(id){giftSel(id);},giftConfirm:function(){giftConfirm();},
  thMode:function(v){var i=v.lastIndexOf('|'),k=v.slice(0,i),m=v.slice(i+1);S.noteMode[k]=m;save();render();if(m==='hand'&&!(S.ink[k]&&S.ink[k].length))Ink.open(k);},
  inkOpen:function(k){Ink.open(k);},
- celThank:function(k){var ta=document.getElementById('celta');if(ta)ta.blur();awardSticker(k,true);if(!S.stickers[k])return;var box=document.getElementById('celth');if(box&&!box.classList.contains('done')){box.classList.add('done');box.innerHTML=celThInner(k,'grow');}},
+ celThank:function(k){var ta=document.getElementById('celta');if(ta)ta.blur();awardSticker(k,true);if(!S.stickers[k])return;var box=document.getElementById('celth');if(box&&!box.classList.contains('done')){box.classList.add('done');box.innerHTML=celThInner(k,'grow');ui._ov=ovKey(layerOv());}},
  noteDone:function(k){var ta=document.querySelector('[data-note="'+k+'"]');if(ta&&document.activeElement===ta)ta.blur();awardSticker(k);},
  pg:function(k){ui.pg=k;go('pguide');},
  lesson:function(k){var p=k.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);if(!dayOpen(d)){toast(t('아직 열리지 않았어요. 그날 만나요!'));return;}ui.qDate=d.getTime()===today().getTime()?null:d;ui.q=freshQ();view='quiz';stopTTS();window.scrollTo(0,0);render();},
