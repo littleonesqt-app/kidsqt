@@ -39,6 +39,7 @@ async function finishDay(b, pw) {
   await p.fill('#celta', '맛있는 밥을 먹어서 감사해요'); await p.evaluate(() => document.getElementById('celta').dispatchEvent(new Event('input', { bubbles: true })));
   ok(!(await p.$eval('.overlay .ndone', e => e.hidden)), 'button appears once there is text');
   await p.click('.overlay [data-a=celThank]'); await p.waitForTimeout(400);
+  ok(!(await p.$('.toast:not(:empty)')) || !((await text(p, '.toast')).includes('스티커')), 'no second congratulation toast over the celebration');
   ok(!!(await p.$('.overlay .celdone')) && !(await p.$('.overlay #celta')), 'shows it was saved, flower grows');
   await p.click('.overlay [data-a=celClose]'); await p.waitForTimeout(200); await navTo(p, 'home');
   ok(!(await p.$('.thcard:not(.garden)')), 'no reminder on Home once written');

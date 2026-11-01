@@ -1840,11 +1840,11 @@ function stickerList(){return Object.keys(S.stickers).map(function(k){var r=S.st
 function keyDate(k){var p=k.replace(/^mem-/,'').split('-'),m=new Date(+p[0],+p[1]-1,+p[2]),i=['mon','tue','wed','thu','fri'].indexOf(p[3]);m.setDate(m.getDate()+(i<0?0:i));return m;}
 function weekStickers(W){var n=0;Object.keys(S.stickers).forEach(function(k){if(k.indexOf(W.wk+'-')===0)n++;});return n;}
 /* award once per note; returns true only for a newly earned sticker */
-function awardSticker(k){
+function awardSticker(k,quiet){
  if(!k||S.stickers[k]||!noteDone(k))return false;
  var kind=k.split('-').pop();if(!STK[kind])return false;
  S.stickers[k]={kind:kind,at:Date.now()};save();ui.stkNew=k;
- toast(t('{s}를 받았어요! 스티커 모음에 쏙 들어갔어요',{s:stkName(kind)}));
+ if(!quiet)toast(t('{s}를 받았어요! 스티커 모음에 쏙 들어갔어요',{s:stkName(kind)}));
  if(view==='thanks'){var b=document.getElementById('stkbanner');if(b)b.outerHTML=stkBanner();var bd=document.getElementById('stk-'+k);if(bd)bd.innerHTML=stickerSvg(kind,26,'animation:stkpop .7s cubic-bezier(.3,1.5,.5,1) both');bloomFlower(k);}
  setTimeout(function(){if(ui.stkNew===k)ui.stkNew='';},1600);
  return true;
@@ -3190,7 +3190,7 @@ var A={
  gift:function(wk){claimGift(wk);},giftSel:function(id){giftSel(id);},giftConfirm:function(){giftConfirm();},
  thMode:function(v){var i=v.lastIndexOf('|'),k=v.slice(0,i),m=v.slice(i+1);S.noteMode[k]=m;save();render();if(m==='hand'&&!(S.ink[k]&&S.ink[k].length))Ink.open(k);},
  inkOpen:function(k){Ink.open(k);},
- celThank:function(k){var ta=document.getElementById('celta');if(ta)ta.blur();if(!awardSticker(k))return;var box=document.getElementById('celth');if(box){box.classList.add('done');box.innerHTML=celThInner(k,'grow');}},
+ celThank:function(k){var ta=document.getElementById('celta');if(ta)ta.blur();awardSticker(k,true);if(!S.stickers[k])return;var box=document.getElementById('celth');if(box&&!box.classList.contains('done')){box.classList.add('done');box.innerHTML=celThInner(k,'grow');}},
  noteDone:function(k){var ta=document.querySelector('[data-note="'+k+'"]');if(ta&&document.activeElement===ta)ta.blur();awardSticker(k);},
  pg:function(k){ui.pg=k;go('pguide');},
  lesson:function(k){var p=k.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);if(!dayOpen(d)){toast(t('아직 열리지 않았어요. 그날 만나요!'));return;}ui.qDate=d.getTime()===today().getTime()?null:d;ui.q=freshQ();view='quiz';stopTTS();window.scrollTo(0,0);render();},
@@ -3208,7 +3208,7 @@ Object.assign(A,BK_ACTIONS,WK_ACTIONS,{stkTab:function(v){ui.stkTab=v;keepRender
 document.addEventListener('click',function(e){var t=e.target.closest('[data-a]');if(!t||t.disabled)return;var f=A[t.getAttribute('data-a')];if(f){e.preventDefault();f(t.getAttribute('data-v'),t);}});
 document.addEventListener('input',function(e){var t=e.target;if(!t.getAttribute)return;var k=t.getAttribute('data-note');if(k){S.notes[k]=t.value;save();var nw=t.parentNode;if(nw&&nw.classList&&nw.classList.contains('ntxt')){var can=noteCanDone(k);nw.classList.toggle('can',can);var nb=nw.querySelector('.ndone');if(nb)nb.hidden=!can;}return;}var qt=t.getAttribute('data-qt');if(qt!==null){ui.q.v[+qt]=t.value;S.answers[ansKey(+qt)]=t.value;save();quizChrome();return;}var qf=t.getAttribute('data-qf');if(qf){var p=qf.split(':');ui.q.v[+p[0]][+p[1]]=t.value;S.answers[ansKey(+p[0])]=ui.q.v[+p[0]];save();quizChrome();}});
 /* a typed note earns its day's sticker when the child finishes writing (leaves the box) */
-document.addEventListener('change',function(e){var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-note');if(k)awardSticker(k);});
+document.addEventListener('change',function(e){var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-note');if(k){if(e.target.id==='celta')A.celThank(k);else awardSticker(k);}});
 document.addEventListener('keydown',function(e){if(ui.verse){if(e.key==='Escape'){e.preventDefault();A.verseClose();return;}if(e.key==='Tab'){var d=document.querySelector('#vpop .vdlg');if(d){var f=d.querySelectorAll('button'),first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}}if(e.key==='Escape'&&(ui.cel||ui.reward)){ui.cel=null;ui.reward=false;render();}});
 boot();
 })();
