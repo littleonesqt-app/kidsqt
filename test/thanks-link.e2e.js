@@ -18,7 +18,7 @@ async function finishDay(b, pw) {
   await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]');
   if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]'); }
   await p.waitForSelector('.daygrid');
-  ok(!(await p.$('.thcard')), 'no reminder before the QT is done');
+  ok(!(await p.$('.thcard:not(.garden)')), 'no reminder before the QT is done');
   await p.click('.daycard[data-v="2026-10-28"]'); await p.waitForSelector('#qcard-0');
   await p.click('[data-a=qs][data-v="0:1"]'); await p.click('[data-a=qm][data-v="1:0"]'); await p.click('[data-a=qm][data-v="1:2"]');
   await p.click('[data-a=qox][data-v="2:0:X"]'); await p.click('[data-a=qox][data-v="2:1:O"]'); await p.click('[data-a=qw][data-v="3:1"]');
@@ -35,12 +35,14 @@ async function finishDay(b, pw) {
   let p = await finishDay(b, 'thank-1');
   ok(!!(await p.$('.overlay #celta')), 'the celebration has a thank-you box');
   ok(await p.$eval('.overlay .ndone', e => e.hidden), 'the button waits for a few words');
+  ok(!!(await p.$('.overlay #celfp svg')), 'a sprout is in the box before writing');
   await p.fill('#celta', '맛있는 밥을 먹어서 감사해요'); await p.evaluate(() => document.getElementById('celta').dispatchEvent(new Event('input', { bubbles: true })));
   ok(!(await p.$eval('.overlay .ndone', e => e.hidden)), 'button appears once there is text');
   await p.click('.overlay [data-a=celThank]'); await p.waitForTimeout(400);
-  ok(!!(await p.$('.overlay .celdone')) && !(await p.$('.overlay #celta')), 'shows it was saved');
+  ok(!!(await p.$('.overlay .celdone')) && !(await p.$('.overlay #celta')), 'shows it was saved, flower grows');
   await p.click('.overlay [data-a=celClose]'); await p.waitForTimeout(200); await navTo(p, 'home');
-  ok(!(await p.$('.thcard')), 'no reminder on Home once written');
+  ok(!(await p.$('.thcard:not(.garden)')), 'no reminder on Home once written');
+  ok((await p.$$('.thcard.garden .gdn.on')).length === 1, 'Home garden shows today’s flower in bloom');
   await navTo(p, 'thanks');
   ok((await p.$eval('#n-wed', e => e.value)).includes('맛있는 밥'), 'the note is in the Thank-You Notes tab');
   await p.context().close();
@@ -48,13 +50,13 @@ async function finishDay(b, pw) {
   console.log('\n2. Skip it → Home reminds → write there');
   p = await finishDay(b, 'thank-2');
   await p.click('.overlay [data-a=celClose]'); await p.waitForTimeout(200); await navTo(p, 'home');
-  ok(!!(await p.$('.thcard')), 'Home shows the reminder');
-  await p.click('.thcard'); await p.waitForTimeout(300);
+  ok(!!(await p.$('.thcard:not(.garden)')), 'Home shows the reminder');
+  await p.click('.thcard:not(.garden)'); await p.waitForTimeout(300);
   ok(!!(await p.$('#n-wed')), 'tapping it opens Thank-You Notes');
   await p.fill('#n-wed', '가족이 있어서 감사해요'); await p.evaluate(() => document.getElementById('n-wed').dispatchEvent(new Event('input', { bubbles: true })));
   await p.click('[data-a=noteDone][data-v$="-wed"]'); await p.waitForTimeout(300);
   await navTo(p, 'home');
-  ok(!(await p.$('.thcard')), 'reminder gone after writing');
+  ok(!(await p.$('.thcard:not(.garden)')), 'reminder gone after writing');
   await p.context().close();
   console.log(fails ? '\nFAILED' : '\nThank-you link: all checks passed'); await b.close(); process.exit(fails ? 1 : 0);
 })();
