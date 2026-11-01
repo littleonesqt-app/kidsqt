@@ -38,7 +38,7 @@ async function draw(p) {
   await signup(p);
   await require('./_admin')(p, p.user); await p.waitForSelector('.daygrid');   // opens Thursday from the calendar later
   ok((await text(p, 'main')).includes('Little ones QT · 10월 4주'), 'header says 10월 4주');
-  ok((await text(p, '.wksw')).includes('10월 3주 · 지난 주') && (await text(p, '.wkcur')) === '10월 4주 · 이번 주' && (await text(p, '.wkb.nx')).includes('11월 1주 · 다음 주'), 'switcher: ‹ 10월 3주 · 지난 주 · 10월 4주 · 이번 주 · 11월 1주 · 다음 주 ›');
+  ok((await text(p, '.wksw')).includes('10월 3주') && (await text(p, '.wkcur')) === '10월 4주' && (await text(p, '.wkb.nx')).includes('11월 1주'), 'switcher: ‹ 10월 3주 · 10월 4주 · 11월 1주 ›');
   const vc = await text(p, '.versecard');
   ok(vc.includes('이번 주 말씀 · 빌레몬서 1:10-18') && vc.includes('사랑받는 형제') && vc.includes('A Beloved Brother') && vc.includes('10 갇힌 중에서'), 'verse card shows Philemon 1:10-18, “사랑받는 형제”, starting at verse 10');
   const mc = await text(p, '.memcard');
@@ -49,7 +49,7 @@ async function draw(p) {
 
   console.log('\nBible storybook #32');
   await navTo(p, 'bible');
-  ok((await text(p, 'main h1')) === '이번 주 성경 읽기' && (await text(p, 'main .chip')).startsWith('10월 4주 · 이번 주'), 'Bible header 10월 4주 · 이번 주');
+  ok((await text(p, 'main h1')) === '이번 주 성경 읽기' && (await text(p, 'main .chip')).startsWith('10월 4주'), 'Bible header 10월 4주');
   ok((await text(p, '.bk-closed')).includes('사랑받는 형제') && (await text(p, '.bk-closed')).includes('빌레몬서 1:10-18'), 'cover: 사랑받는 형제 · 빌레몬서 1:10-18');
   ok(!!(await p.$('.bk-closed svg[role=img][aria-label*="편지"]')), 'cover has the letter illustration');
   await shot(p, 'w_cover32');
@@ -146,7 +146,7 @@ async function draw(p) {
 
   console.log('\nLooking back at last week (#31)');
   await p.click('.wkb'); await p.waitForTimeout(250);
-  ok((await text(p, '.wkcur')) === '10월 3주 · 지난 주' && !!(await p.$('.wkb.nx')), 'switched to 10월 3주 · 지난 주, can go forward again');
+  ok((await text(p, '.wkcur')) === '10월 3주' && !!(await p.$('.wkb.nx')), 'switched to 10월 3주, can go forward again');
   const vc31 = await text(p, '.versecard');
   ok(vc31.includes('지난 주 말씀 · 골로새서 1:13-20') && vc31.includes('예수님이 누구신지 바로 알아야 해요!'), 'last week’s verse card is #31 Colossians');
   ok((await text(p, 'main .meta')).includes('10월 3주'), 'header shows 10월 3주');
@@ -154,22 +154,22 @@ async function draw(p) {
   await p.click('.daycard >> nth=0'); await p.waitForTimeout(250);
   ok((await text(p, 'main h1')).includes('마음 열기') && (await text(p, '#qcard-0')).includes('예수님을 생각하면'), 'last week’s Monday opens the #31 lesson');
   await p.click('#backfix .backbtn'); await p.waitForTimeout(200);
-  ok((await text(p, '.wkcur')) === '10월 3주 · 지난 주', 'still looking at last week after coming back');
+  ok((await text(p, '.wkcur')) === '10월 3주', 'still looking at last week after coming back');
   await navTo(p, 'bible');
-  ok((await text(p, 'main .chip')).startsWith('10월 3주 · 지난 주') && !!(await p.$('.wkback')) && (await text(p, 'main h1')) === '지난 주 성경 읽기', 'Bible: 10월 3주 · 지난 주 with a way back');
+  ok((await text(p, 'main .chip')).startsWith('10월 3주') && !!(await p.$('.wkback')) && (await text(p, 'main h1')) === '지난 주 성경 읽기', 'Bible: 10월 3주 with a way back');
   ok((await text(p, '.bk-closed')).includes('예수님이 누구신지 바로 알아야 해요!'), 'last week’s storybook cover');
   await navTo(p, 'thanks');
-  ok((await text(p, 'main')).includes('10월 3주 · 지난 주') && !!(await p.$('.wkback')), 'Thanks shows which week');
+  ok((await text(p, 'main')).includes('10월 3주') && !!(await p.$('.wkback')), 'Thanks shows which week');
   await p.click('.wkback'); await p.waitForTimeout(200);
   ok(!(await p.$('.wkback')), 'back to this week');
   await navTo(p, 'home');
-  ok((await text(p, '.wkcur')) === '10월 4주 · 이번 주', 'home is #32 again');
+  ok((await text(p, '.wkcur')) === '10월 4주', 'home is #32 again');
 
   console.log('\nEnglish');
   await p.click('[data-a=setLang][data-v=en]'); await p.waitForTimeout(200);
   const vce = await text(p, '.versecard');
   ok(vce.includes("This Week's Bible · Philemon 1:10–18") && vce.includes('A Beloved Brother'), 'English verse card');
-  ok((await text(p, '.wkcur')) === 'Oct · Week 4 · This Week' && (await text(p, '.wkb')).includes('Oct · Week 3 · Last Week'), 'English switcher');
+  ok((await text(p, '.wkcur')) === 'Oct. Week 4' && (await text(p, '.wkb')).includes('Oct. Week 3'), 'English switcher');
   await p.click('.daycard >> nth=1'); await p.waitForTimeout(250);
   ok((await text(p, '#qcard-0')).includes('Choose · v. 10'), 'English label “Choose · v. 10”');
   await p.click('#qcard-0 .vref'); await p.waitForTimeout(150);
@@ -191,9 +191,9 @@ async function draw(p) {
   await signup(ps);
   ok(!(await ps.$('.wkb.nx')), 'Sunday, child account: no next-week preview');
   await require('./_admin')(ps, ps.user); await ps.waitForSelector('.daygrid');
-  ok((await text(ps, '.wkcur')) === '10월 3주 · 이번 주' && (await text(ps, '.wkb.nx')).includes('10월 4주 · 다음 주'), 'Sunday, admin: #31 this week, #32 next week to preview');
+  ok((await text(ps, '.wkcur')) === '10월 3주' && (await text(ps, '.wkb.nx')).includes('10월 4주'), 'Sunday, admin: #31 this week, #32 next week to preview');
   await ps.click('.wkb.nx'); await ps.waitForTimeout(250);
-  ok((await text(ps, '.wkcur')) === '10월 4주 · 다음 주' && (await text(ps, '.versecard')).includes('다음 주 말씀 · 빌레몬서 1:10-18'), 'preview shows #32');
+  ok((await text(ps, '.wkcur')) === '10월 4주' && (await text(ps, '.versecard')).includes('다음 주 말씀 · 빌레몬서 1:10-18'), 'preview shows #32');
   await ps.click('.daycard >> nth=0'); await ps.waitForTimeout(250);
   ok((await text(ps, 'main')).includes('관리자 미리 보기 · 10월'), 'admin can open next week’s Monday QT (marked as preview)');
   await shot(ps, 'w_preview');
