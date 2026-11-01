@@ -992,8 +992,9 @@ function vbtn(label,bk,ch,a,b){ch=+ch||1;a=+a;b=+(b||a);if(!passage(bk,ch,a,b).l
 /* turn verse references inside lesson text into buttons (one pass, so nothing is linked twice).
    A reference without a book name belongs to this week's book; "갈 3:28", "Gal 3:28" etc. name another book. */
 function vrefs(s){if(!s)return s;
- if(isEn())return s.replace(/(?:(1 Corinthians|Colossians|Galatians|Philemon|Hebrews|Genesis|1 Cor|Col|Gal|Phlm|Heb|Gen)\.? )?(\d+):(\d+)(?:[–-](\d+))?|\b(?:vv?\.|verses?) (\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,a2,b2){return c?vbtn(m,bn?BK_EN[bn]:CUR.code,c,a,b):vbtn(m,CUR.code,(CUR.book&&CUR.book.ch)||1,a2,b2);});
- return s.replace(/(고린도전서|골로새서|갈라디아서|빌레몬서|히브리서|창세기|고전|골|갈|몬|히|창) (\d+):(\d+)(?:[–-](\d+))?|(?:(\d+)장 )?(\d+)(?:-(\d+))?절/g,function(m,bn,c,a,b,c2,a2,b2){return bn?vbtn(m,BK_KO[bn],c,a,b):vbtn(m,CUR.code,c2||(CUR.book&&CUR.book.ch)||1,a2,b2);});}
+ if(isEn()){s=s.replace(/vv\. (\d+), (\d+)/g,'v. $1, v. $2');return s.replace(/(?:(1 Corinthians|Colossians|Galatians|Philemon|Hebrews|Genesis|1 Cor|Col|Gal|Phlm|Heb|Gen)\.? )?(\d+):(\d+)(?:[–-](\d+))?|\b(?:vv?\.|verses?) (\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,a2,b2){return c?vbtn(m,bn?BK_EN[bn]:CUR.code,c,a,b):vbtn(m,CUR.code,(CUR.book&&CUR.book.ch)||1,a2,b2);});}
+ s=s.replace(/(\d+(?:-\d+)?), (\d+(?:-\d+)?절)/g,'$1절, $2');
+ return s.replace(/(고린도전서|골로새서|갈라디아서|빌레몬서|히브리서|창세기|고전|골|갈|몬|히|창) (\d+):(\d+)(?:[–-](\d+))?|(?:(\d+)장 )?(\d+)(?:-(\d+))?절|(\d+):(\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,c2,a2,b2,c3,a3,b3){if(bn)return vbtn(m,BK_KO[bn],c,a,b);if(a2)return vbtn(m,CUR.code,c2||(CUR.book&&CUR.book.ch)||1,a2,b2);return vbtn(m,CUR.code,c3,a3,b3);});}
 function versePop(){var v=ui.verse;if(!v)return '';var ps=passage(v.bk,v.ch,v.a,v.b),en=isEn();
  return '<div class="overlay" data-a="verseClose" id="vpop"><div class="dialog vdlg" data-a="noop" role="dialog" aria-modal="true" aria-labelledby="vtitle">'+
  '<button type="button" class="icon-btn vclose" data-a="verseClose" aria-label="'+t('닫기')+'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A2620" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+

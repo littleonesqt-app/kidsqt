@@ -184,7 +184,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .qfill{width:9em;max-width:100%;height:34px;padding:0 8px;margin:0 4px;border:0;border-bottom:2px dashed #CBBFB3;border-radius:8px;background:#FBF8F3;color:var(--ink);font:16px var(--body);vertical-align:middle}
 .qfill:focus,.qtext:focus{outline:3px solid var(--brown);outline-offset:1px}
 .exchip{height:36px;padding:0 14px;border:0;border-radius:18px;background:#FFFFFF;font-size:13px;font-weight:700;color:#5E514A}
-.qlisten{margin-left:auto;height:44px;min-width:44px;padding:0 14px;border:0;border-radius:22px;background:#FFFFFF;color:#3A2620;font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;box-shadow:0 1px 0 rgba(58,38,32,.12)}
+.qlisten{margin-left:auto;flex:none;white-space:nowrap;height:44px;min-width:44px;padding:0 14px;border:0;border-radius:22px;background:#FFFFFF;color:#3A2620;font:inherit;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;box-shadow:0 1px 0 rgba(58,38,32,.12)}
 .qlisten.on{background:#3A2620;color:#FFFFFF}
 .qlisten b{font-weight:700}
 .hwbtn{height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:6px;align-self:flex-start;border:2px dashed #CBBFB3;font-size:14px}
@@ -1497,8 +1497,9 @@ function vbtn(label,bk,ch,a,b){ch=+ch||1;a=+a;b=+(b||a);if(!passage(bk,ch,a,b).l
 /* turn verse references inside lesson text into buttons (one pass, so nothing is linked twice).
    A reference without a book name belongs to this week's book; "갈 3:28", "Gal 3:28" etc. name another book. */
 function vrefs(s){if(!s)return s;
- if(isEn())return s.replace(/(?:(1 Corinthians|Colossians|Galatians|Philemon|Hebrews|Genesis|1 Cor|Col|Gal|Phlm|Heb|Gen)\.? )?(\d+):(\d+)(?:[–-](\d+))?|\b(?:vv?\.|verses?) (\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,a2,b2){return c?vbtn(m,bn?BK_EN[bn]:CUR.code,c,a,b):vbtn(m,CUR.code,(CUR.book&&CUR.book.ch)||1,a2,b2);});
- return s.replace(/(고린도전서|골로새서|갈라디아서|빌레몬서|히브리서|창세기|고전|골|갈|몬|히|창) (\d+):(\d+)(?:[–-](\d+))?|(?:(\d+)장 )?(\d+)(?:-(\d+))?절/g,function(m,bn,c,a,b,c2,a2,b2){return bn?vbtn(m,BK_KO[bn],c,a,b):vbtn(m,CUR.code,c2||(CUR.book&&CUR.book.ch)||1,a2,b2);});}
+ if(isEn()){s=s.replace(/vv\. (\d+), (\d+)/g,'v. $1, v. $2');return s.replace(/(?:(1 Corinthians|Colossians|Galatians|Philemon|Hebrews|Genesis|1 Cor|Col|Gal|Phlm|Heb|Gen)\.? )?(\d+):(\d+)(?:[–-](\d+))?|\b(?:vv?\.|verses?) (\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,a2,b2){return c?vbtn(m,bn?BK_EN[bn]:CUR.code,c,a,b):vbtn(m,CUR.code,(CUR.book&&CUR.book.ch)||1,a2,b2);});}
+ s=s.replace(/(\d+(?:-\d+)?), (\d+(?:-\d+)?절)/g,'$1절, $2');
+ return s.replace(/(고린도전서|골로새서|갈라디아서|빌레몬서|히브리서|창세기|고전|골|갈|몬|히|창) (\d+):(\d+)(?:[–-](\d+))?|(?:(\d+)장 )?(\d+)(?:-(\d+))?절|(\d+):(\d+)(?:[–-](\d+))?/g,function(m,bn,c,a,b,c2,a2,b2,c3,a3,b3){if(bn)return vbtn(m,BK_KO[bn],c,a,b);if(a2)return vbtn(m,CUR.code,c2||(CUR.book&&CUR.book.ch)||1,a2,b2);return vbtn(m,CUR.code,c3,a3,b3);});}
 function versePop(){var v=ui.verse;if(!v)return '';var ps=passage(v.bk,v.ch,v.a,v.b),en=isEn();
  return '<div class="overlay" data-a="verseClose" id="vpop"><div class="dialog vdlg" data-a="noop" role="dialog" aria-modal="true" aria-labelledby="vtitle">'+
  '<button type="button" class="icon-btn vclose" data-a="verseClose" aria-label="'+t('닫기')+'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A2620" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>'+
