@@ -537,7 +537,7 @@ setInterval(function(){
 },30000);
 V.bible=function(){
  if(!ui.bk)ui.bk={open:false,p:1};
- var vs='';VERSES.forEach(function(v){var main=(ui.tr==='en'||(ui.tr==='both'&&isEn()))?v[2]:v[1];vs+='<div class="verse"><span class="vn'+(ui.playing===v[0]?' now':'')+'">'+v[0]+'</span><div style="min-width:0;flex:1"><div class="vt">'+main+'</div>'+(ui.tr==='both'?'<div class="vsub">'+(isEn()?v[1]:v[2])+'</div>':'')+(v[3]?'<span class="chip" style="margin-top:6px;background:#E1DBF8;color:#5B4A9E;font-size:11px">'+star4(12,'#9B8AE3')+''+t('이번 주 암송 구절')+'</span>':'')+'</div></div>';});
+ var vs='';VERSES.forEach(function(v){var main=(ui.tr==='en'||(ui.tr==='both'&&isEn()))?v[2]:v[1];vs+='<div class="verse'+(ui.playing===v[0]?' now':'')+'"><span class="vn'+(ui.playing===v[0]?' now':'')+'">'+v[0]+'</span><div style="min-width:0;flex:1"><div class="vt'+(ui.playing===v[0]?' now':'')+'">'+vWords(main)+'</div>'+(ui.tr==='both'?'<div class="vsub">'+(isEn()?v[1]:v[2])+'</div>':'')+(v[3]?'<span class="chip" style="margin-top:6px;background:#E1DBF8;color:#5B4A9E;font-size:11px">'+star4(12,'#9B8AE3')+''+t('이번 주 암송 구절')+'</span>':'')+'</div></div>';});
  var seg=function(c,l){return '<button type="button" data-a="tr" data-v="'+c+'" aria-pressed="'+(ui.tr===c)+'" class="'+(ui.tr===c?'on':'')+'">'+l+'</button>';};
  var tts=('speechSynthesis' in window);
  var side='max(16px,env(safe-area-inset-left,0px))';
@@ -672,7 +672,7 @@ function bkPageR(p){
  var v=BOOK.verses[p-1],main=(ui.tr==='en'||(ui.tr==='both'&&isEn()))?v[2]:v[1];
  return '<div class="bk-page r"><span class="bk-tape" aria-hidden="true"></span><div class="bk-ph"><span class="vn'+(ui.playing===v[0]?' now':'')+'">'+v[0]+'</span><span class="bk-ref">'+bkRef(v[0])+'</span></div>'+
  (v[3]?'<span class="chip" style="align-self:flex-start;margin-top:8px;background:#E1DBF8;color:#5B4A9E;font-size:11px">'+star4(12,'#9B8AE3')+t('이번 주 암송 구절')+'</span>':'')+
- '<div class="bk-body"><p class="bk-vt">'+main+'</p>'+(ui.tr==='both'?'<p class="bk-vsub">'+(isEn()?v[1]:v[2])+'</p>':'')+'</div><div class="bk-folio">'+p+'</div>'+bkGarden()+'</div>';
+ '<div class="bk-body"><p class="bk-vt'+(ui.playing===v[0]?' now':'')+'">'+vWords(main)+'</p>'+(ui.tr==='both'?'<p class="bk-vsub">'+(isEn()?v[1]:v[2])+'</p>':'')+'</div><div class="bk-folio">'+p+'</div>'+bkGarden()+'</div>';
 }
 /* tablets: the left page of the spread, a quiet picture page for the same verse */
 function bkPageL(p){
@@ -774,8 +774,9 @@ function bkSpeak(){
  stopTTS();var tok=ttsToken,v=BOOK.verses[b.p-1],en=ui.tr==='en'||(ui.tr==='both'&&isEn());
  var u=new SpeechSynthesisUtterance((en?'Verse '+v[0]+'. ':v[0]+'절. ')+(en?v[2]:v[1]));u.lang=en?'en-US':'ko-KR';u.rate=.85;
  try{var vs=window.speechSynthesis.getVoices().filter(function(x){return x.lang&&x.lang.replace('_','-').indexOf(u.lang.slice(0,2))===0;});if(vs[0])u.voice=vs[0];}catch(e){}
- u.onend=u.onerror=function(){if(tok===ttsToken){ui.playing=0;bkChrome();var vn=document.querySelector('#bkpages .vn.now');if(vn)vn.classList.remove('now');}};
- ui.playing=v[0];bkChrome();var vn=document.querySelector('#bkpages .bk-page.r .vn');if(vn)vn.classList.add('now');
+ u.onboundary=vBound('#bkpages .bk-page.r .bk-vt',(en?'Verse '+v[0]+'. ':v[0]+'절. ').length,tok);
+ u.onend=u.onerror=function(){if(tok===ttsToken){ui.playing=0;bkChrome();vClear();}};
+ ui.playing=v[0];bkChrome();var vn=document.querySelector('#bkpages .bk-page.r .vn'),vt=document.querySelector('#bkpages .bk-page.r .bk-vt');if(vn)vn.classList.add('now');if(vt)vt.classList.add('now');
  window.speechSynthesis.speak(u);
 }
 var BK_ACTIONS={
@@ -3101,6 +3102,12 @@ function qSpeakRun(segs,k,tok){
  window.speechSynthesis.speak(u);
 }
 (function(add){for(var k in add)if(!Object.prototype.hasOwnProperty.call(EN,k))EN[k]=add[k];})({"읽어 주기":"Read aloud","멈추기":"Stop","질문 소리로 듣기":"Listen to this question"});
+/* read-along: verse text is split into words so the spoken word can be marked (where the device reports word positions) */
+function vWords(x){var h='',i=0;String(x).split(/(\s+)/).forEach(function(p){if(!p)return;if(/^\s+$/.test(p))h+=p;else h+='<span class="w" data-s="'+i+'">'+esc(p)+'</span>';i+=p.length;});return h;}
+function vMark(root,idx){if(!root)return;var ws=root.querySelectorAll('.w'),hit=null,k;for(k=0;k<ws.length;k++){if(+ws[k].getAttribute('data-s')<=idx)hit=ws[k];else break;}for(k=0;k<ws.length;k++)ws[k].classList.toggle('on',ws[k]===hit);}
+function vBound(sel,pfx,tok){return function(e){if(tok!==ttsToken)return;if(e.name&&e.name!=='word')return;var i=(e.charIndex||0)-pfx;if(i<0)return;vMark(document.querySelector(sel),i);};}
+function vClear(){var a=document.querySelectorAll('#bkpages .now,.w.on');for(var k=0;k<a.length;k++){a[k].classList.remove('now');a[k].classList.remove('on');}}
+function vScroll(){var el=document.querySelector('.verse.now');if(!el)return;var r=el.getBoundingClientRect();if(r.top<90||r.bottom>window.innerHeight-120){var red=false;try{red=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}el.scrollIntoView({block:'center',behavior:red?'auto':'smooth'});}}
 function stopTTS(){ttsToken++;try{if(window.speechSynthesis)window.speechSynthesis.cancel();}catch(e){}ui.playing=0;}
 function speakFrom(i,tok){
  if(tok!==ttsToken)return;
@@ -3109,9 +3116,10 @@ function speakFrom(i,tok){
  var u=new SpeechSynthesisUtterance((en?'Verse '+v[0]+'. ':v[0]+'절. ')+(en?v[2]:v[1]));
  u.lang=en?'en-US':'ko-KR';u.rate=.85;
  try{var vs=window.speechSynthesis.getVoices().filter(function(x){return x.lang&&x.lang.replace('_','-').indexOf(u.lang.slice(0,2))===0;});if(vs[0])u.voice=vs[0];}catch(e){}
+ u.onboundary=vBound('.verse.now .vt',(en?'Verse '+v[0]+'. ':v[0]+'절. ').length,tok);
  u.onend=function(){speakFrom(i+1,tok);};
  u.onerror=function(){if(tok===ttsToken){ui.playing=0;if(view==='bible')render();}};
- ui.playing=v[0];if(view==='bible')render();
+ ui.playing=v[0];if(view==='bible'){render();vScroll();}
  window.speechSynthesis.speak(u);
 }
 
@@ -3138,7 +3146,7 @@ var A={
  big:function(){ui.big=!ui.big;render();},
  read:function(){ui.read=true;render();},
  tts:function(){
-  if(view==='bible'&&ui.bk&&ui.bk.open){if(ui.playing){stopTTS();bkChrome();var vn=document.querySelector('#bkpages .vn.now');if(vn)vn.classList.remove('now');return;}if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){toast(t('이 기기에서는 소리로 읽기를 지원하지 않아요'));return;}bkSpeak();return;}
+  if(view==='bible'&&ui.bk&&ui.bk.open){if(ui.playing){stopTTS();bkChrome();vClear();return;}if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){toast(t('이 기기에서는 소리로 읽기를 지원하지 않아요'));return;}bkSpeak();return;}
   if(ui.playing){stopTTS();render();return;}
   if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){toast(t('이 기기에서는 소리로 읽기를 지원하지 않아요'));return;}
   stopTTS();speakFrom(0,ttsToken);
