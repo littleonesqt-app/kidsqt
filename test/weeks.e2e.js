@@ -38,7 +38,7 @@ async function draw(p) {
   await signup(p);
   await require('./_admin')(p, p.user); await p.waitForSelector('.daygrid');   // opens Thursday from the calendar later
   ok((await text(p, 'main')).includes('Little ones QT · 10월 4주'), 'header says 10월 4주');
-  ok((await text(p, '.wksw')).includes('10월 3주 · 지난 주') && (await text(p, '.wkcur')) === '10월 4주 · 이번 주' && !(await p.$('.wkb.nx')), 'switcher: ‹ 10월 3주 · 지난 주 · 10월 4주 · 이번 주, no next week yet');
+  ok((await text(p, '.wksw')).includes('10월 3주 · 지난 주') && (await text(p, '.wkcur')) === '10월 4주 · 이번 주' && (await text(p, '.wkb.nx')).includes('11월 1주 · 다음 주'), 'switcher: ‹ 10월 3주 · 지난 주 · 10월 4주 · 이번 주 · 11월 1주 · 다음 주 ›');
   const vc = await text(p, '.versecard');
   ok(vc.includes('이번 주 말씀 · 빌레몬서 1:10-18') && vc.includes('사랑받는 형제') && vc.includes('A Beloved Brother') && vc.includes('10 갇힌 중에서'), 'verse card shows Philemon 1:10-18, “사랑받는 형제”, starting at verse 10');
   const mc = await text(p, '.memcard');
