@@ -227,6 +227,11 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid va
 .isw.on{box-shadow:0 0 0 3px var(--sw)}
 .ink-page{position:relative;flex:1;min-height:0;border-radius:24px;background:#FFFDF8;box-shadow:0 6px 18px rgba(74,44,37,.08);overflow:hidden}
 .ink-page canvas{position:absolute;inset:0;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:crosshair}
+.ink-q{flex:none;max-height:30vh;overflow:auto;touch-action:pan-y;padding:10px 14px;border-radius:18px;background:#FFFFFF;box-shadow:0 2px 8px rgba(74,44,37,.08);display:flex;flex-direction:column;gap:4px}
+.ink-qt{font-size:16px;font-weight:700;line-height:1.5;color:#3A2620}
+.ink-qe{font-size:12px;line-height:1.45;color:#75685F}
+.ink-qf{font-size:15px;line-height:2;color:#4A3730}
+.ink-bl{display:inline-block;width:3.2em;border-bottom:2px solid #CBBFB3;margin:0 4px;vertical-align:baseline}
 .ink-hint{position:absolute;left:0;right:0;top:38%;text-align:center;font-family:var(--display);font-size:20px;color:#CBBFB3;pointer-events:none}
 .ink-ask{position:fixed;inset:0;z-index:2;background:rgba(58,38,32,.35);display:flex;align-items:center;justify-content:center;padding:24px}
 .ink-ask[hidden]{display:none}
@@ -1605,7 +1610,7 @@ var Ink=(function(){
   el=document.createElement('div');el.className='ink';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label',cfg?cfg.label:t('{d} 손글씨 감사 노트',{d:dayFull(d.wd)}));
   var sw='';COLORS.forEach(function(x,i){sw+='<button type="button" class="isw'+(i?'':' on')+'" data-ic="'+x[0]+'" aria-label="'+t('{c} 펜',{c:t(x[1])})+'" style="--sw:'+x[0]+'"></button>';});
   el.innerHTML='<div class="ink-in"><div class="ink-top"><button type="button" class="icon-btn" data-ik="close" aria-label="'+(cfg?cfg.closeLabel:t('닫고 감사 노트로 돌아가기'))+'">'+ico(IC.x,20,'#3A2620',2.6)+'</button><div style="flex:1;min-width:0;display:flex;align-items:center;gap:8px">'+(cfg?cfg.chip:'<span class="chip" style="background:'+col[0]+';color:'+col[1]+'">'+dayFull(d.wd)+' · '+md(d.date)+'</span><span class="disp ink-title">'+t('손글씨 감사 노트')+'</span>')+'</div><button type="button" class="ink-save" data-ik="save">'+ico(IC.check,18,'#FFFFFF',2.8)+''+t('저장')+'</button></div>'+
-  '<div class="ink-tools" role="toolbar" aria-label="'+t('손글씨 도구')+'"><div class="itg"><button type="button" class="itb on" data-ik="pen" aria-label="'+t('펜')+'" aria-pressed="true">'+ico(IC.pen,20)+'<span>'+t('펜')+'</span></button><button type="button" class="itb" data-ik="eraser" aria-label="'+t('지우개')+'" aria-pressed="false">'+ico(IC.eraser,20)+'<span>'+t('지우개')+'</span></button></div><div class="itg isws">'+sw+'</div><div class="itg"><button type="button" class="itb" data-ik="undo" aria-label="'+t('되돌리기')+'">'+ico(IC.undo,20)+'</button><button type="button" class="itb" data-ik="redo" aria-label="'+t('다시 하기')+'">'+ico(IC.redo,20)+'</button><button type="button" class="itb" data-ik="clear" aria-label="'+t('모두 지우기')+'">'+ico(IC.trash,20)+'</button></div></div>'+
+  (cfg&&cfg.ask?'<div class="ink-q">'+cfg.ask+'</div>':'')+'<div class="ink-tools" role="toolbar" aria-label="'+t('손글씨 도구')+'"><div class="itg"><button type="button" class="itb on" data-ik="pen" aria-label="'+t('펜')+'" aria-pressed="true">'+ico(IC.pen,20)+'<span>'+t('펜')+'</span></button><button type="button" class="itb" data-ik="eraser" aria-label="'+t('지우개')+'" aria-pressed="false">'+ico(IC.eraser,20)+'<span>'+t('지우개')+'</span></button></div><div class="itg isws">'+sw+'</div><div class="itg"><button type="button" class="itb" data-ik="undo" aria-label="'+t('되돌리기')+'">'+ico(IC.undo,20)+'</button><button type="button" class="itb" data-ik="redo" aria-label="'+t('다시 하기')+'">'+ico(IC.redo,20)+'</button><button type="button" class="itb" data-ik="clear" aria-label="'+t('모두 지우기')+'">'+ico(IC.trash,20)+'</button></div></div>'+
   '<div class="ink-page"><canvas aria-label="'+t('손글씨를 쓰는 곳')+'"></canvas><div class="ink-hint">'+(cfg?cfg.hint:t('여기에 하나님께 감사한 일을 써 보세요'))+'</div></div>'+
   '<div class="ink-ask" hidden></div></div>';
   document.body.appendChild(el);document.body.style.overflow='hidden';
@@ -2846,9 +2851,9 @@ function bkQuizDate(){var d=viewDate(),w=d.getDay();if(w===0)d.setDate(d.getDate
 var WK_ACTIONS={
  wkGo:function(v){var o=v==='0'?0:(ui.wkOff||0)+(+v);if(!wkOk(o))return;ui.wkOff=o;stopTTS();ui.bk={open:false,p:1};ui.mem=null;window.scrollTo(0,0);render();},
  bkQuiz:function(){if(!ui.wkOff){go('quiz');return;}A.lesson(dkey(bkQuizDate()));},
- qhand:function(v){
+ qhand:function(v){/*the question stays on screen while writing*/
   var i=+v,k=ansKey(i),d=qDay(),L=lessonL(lessonCode()),q=L.qs[i];if(!q)return;if(!S.qink)S.qink={};
-  Ink.open('q-'+k,{label:t('손글씨로 쓰기'),closeLabel:t('닫고 묵상으로 돌아가기'),hint:q.q,
+  Ink.open('q-'+k,{label:t('손글씨로 쓰기'),closeLabel:t('닫고 묵상으로 돌아가기'),hint:q.q,ask:qAskHtml(q),
    chip:'<span class="chip" style="background:'+L.color+';color:'+L.ink+'">'+dayFull(d.getDay())+' · '+md(d)+'</span><span class="disp ink-title">'+t('손글씨로 쓰기')+'</span>',
    get:function(){return S.qink[k];},
    set:function(s){if(s.length)S.qink[k]=s;else delete S.qink[k];},
@@ -2856,7 +2861,7 @@ var WK_ACTIONS={
  },
  qdraw:function(v){
   var i=+v,k=ansKey(i),d=qDay(),L=lessonL(lessonCode()),q=L.qs[i];if(!q)return;if(!S.qink)S.qink={};
-  Ink.open('q-'+k,{plain:true,label:t('그림 그리기'),closeLabel:t('닫고 묵상으로 돌아가기'),hint:q.hint||t('여기에 그림을 그려 보세요'),
+  Ink.open('q-'+k,{plain:true,label:t('그림 그리기'),closeLabel:t('닫고 묵상으로 돌아가기'),hint:q.hint||t('여기에 그림을 그려 보세요'),ask:qAskHtml(q),
    chip:'<span class="chip" style="background:'+L.color+';color:'+L.ink+'">'+dayFull(d.getDay())+' · '+md(d)+'</span><span class="disp ink-title">'+t('그림 그리기')+'</span>',
    get:function(){return S.qink[k];},
    set:function(s){if(s.length)S.qink[k]=s;else delete S.qink[k];ui.q.v[i]=s.length;},
@@ -2904,6 +2909,13 @@ function go(v){if(view==='memory'&&v!=='memory')memStopAll();ui.verse=null;stopT
 var ttsToken=0;
 /* ---- read the question aloud (children who can't read yet) ---- */
 var qSpeak={i:-1};
+/* the question shown above the writing page, so it is never forgotten while writing by hand */
+function qAskHtml(q){
+ var h='<div class="ink-qt">'+(q.q||'')+'</div>';
+ if(!isEn()&&q.en)h+='<div class="ink-qe">'+q.en+'</div>';
+ if(q.type==='fill'&&q.parts)h+='<div class="ink-qf">'+q.parts.map(function(p){return typeof p==='number'?'<span class="ink-bl" aria-label="'+t('빈칸 {n}',{n:p+1})+'"></span>':p;}).join('')+'</div>';
+ return h;
+}
 function qStrip(s){return String(s==null?'':s).replace(/<[^>]*>/g,'').replace(/&nbsp;|&#12288;/g,' ');}
 function qSegs(q){
  var en=isEn(),P=function(o){return qStrip(en?o[1]:o[0]);},N=function(n){return en?String(n+1):(n+1)+'번';},segs=[qStrip(q.q)];

@@ -97,7 +97,10 @@ async function handwriting(b) {
   await p.click('[data-a=qm][data-v="0:0"]'); await p.click('[data-a=qs][data-v="1:0"]');
   ok(!!(await p.$('#qcard-2 .hwbtn')), 'the typed question offers "손글씨로 쓰기"');
   ok((await checks(p)).done === 2, 'two answered, the typed one still open');
+  const cardTxt = (await p.textContent('#qcard-2')) || '';
   await p.click('#qcard-2 .hwbtn'); await p.waitForSelector('.ink'); await draw(p, 12);
+  const qt = ((await p.textContent('.ink .ink-qt')) || '').trim();
+  ok(qt.length > 8 && cardTxt.includes(qt.slice(0, 12)), 'the question stays on the handwriting page after drawing starts: ' + qt.slice(0, 30));
   await p.click('[data-ik=save]'); await p.waitForTimeout(300);
   ok(!!(await p.$('#qcard-2 .hwprev svg path')), 'handwriting preview appears in the question');
   ok((await checks(p)).done === 3, 'handwriting counts as the answer (3/3)');
@@ -107,7 +110,8 @@ async function handwriting(b) {
   await openDay(p, '2026-10-22'); // Thursday: fill question #4
   await p.click('[data-a=qs][data-v="0:1"]'); await p.click('[data-a=qw][data-v="1:0"]'); await p.click('[data-a=qs][data-v="2:0"]');
   ok(!!(await p.$('#qcard-3 .hwbtn')), 'the fill-in question offers handwriting too');
-  await p.click('#qcard-3 .hwbtn'); await p.waitForSelector('.ink'); await draw(p, 8); await p.click('[data-ik=save]'); await p.waitForTimeout(300);
+  await p.click('#qcard-3 .hwbtn'); await p.waitForSelector('.ink'); await draw(p, 8);
+  ok(!!(await p.$('.ink .ink-q .ink-bl')), 'fill-in question: the sentence with its blanks stays visible while writing'); await p.click('[data-ik=save]'); await p.waitForTimeout(300);
   ok((await checks(p)).done === 4, 'handwritten sentence completes the fill-in question');
   await reload(p);
   await openDay(p, '2026-10-19');
