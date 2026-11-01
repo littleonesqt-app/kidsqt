@@ -21,7 +21,7 @@ const toast = async p => { await p.waitForTimeout(120); const t = await p.$('.to
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', user); await p.fill('#f-password', 'daylock-1'); await p.fill('#f-password2', 'daylock-1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   await p.waitForSelector('.daygrid');
 
   console.log('\nChild account on Wednesday');

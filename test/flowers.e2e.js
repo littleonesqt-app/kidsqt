@@ -26,7 +26,7 @@ async function draw(p) {
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', user); await p.fill('#f-password', 'flowers-1'); await p.fill('#f-password2', 'flowers-1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   await require('./_admin')(p, user); await p.waitForSelector('nav');   // writes all five notes on a Wednesday
   await navTo(p, 'thanks');
 
@@ -105,7 +105,7 @@ async function draw(p) {
   await rm.click('[data-a=authMode][data-v=signup]');
   await rm.fill('#f-username', u2); await rm.fill('#f-password', 'flowers-1'); await rm.fill('#f-password2', 'flowers-1');
   await rm.click('form[data-form=signup] button[type=submit]'); await rm.waitForSelector('.rcode');
-  await rm.click('[data-a=rcAck]'); await rm.click('[data-a=rcDone]'); await rm.click('[data-a=lang][data-v=en]'); await rm.click('[data-a=obNext]'); await rm.click('[data-a=start]');
+  await rm.click('[data-a=rcAck]'); await rm.click('[data-a=rcDone]'); await rm.click('[data-a=lang][data-v=en]'); await rm.click('[data-a=obNext]'); await rm.click('[data-a=start]'); await rm.click('[data-a=start]');
   await navTo(rm, 'thanks');
   const k0 = (await pots(rm))[0].id.slice(3);
   await rm.fill(`[data-note="${k0}"]`, 'Thank you God for my family');

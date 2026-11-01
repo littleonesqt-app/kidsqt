@@ -22,7 +22,7 @@ async function signup(b, vp, opts) {
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', u); await p.fill('#f-password', 'reading-1'); await p.fill('#f-password2', 'reading-1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   p.user = u; return p;
 }
 

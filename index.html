@@ -986,23 +986,31 @@ function toast(m){ui.toast=m;renderLayer();clearTimeout(toastTimer);toastTimer=s
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 
 var V={};
+/* first-time outfit: one tee and one bottom from the first two weeks' gifts become the starting clothes */
+function starterOpts(){var o={shirt:[],bottom:[]};reward('2026-10-19').cats.forEach(function(c){if(c.slot==='shirt')o.shirt=c.items;});reward('2026-10-26').cats.forEach(function(c){if(c.slot==='bottom')o.bottom=c.items;});return o;}
+function ensureStarter(){var so=starterOpts();ui.starter=ui.starter||{};['shirt','bottom'].forEach(function(k){if(so[k].indexOf(ui.starter[k])<0)ui.starter[k]=so[k][0];});}
 V.onboard=function(){
  var en=S.lang==='en';
- var T=en?{hello:'Welcome!',sub:'Little ones QT · Daily Devotion',q:'Which language do you like?',next:'Next',pick:'Pick your look',pickSub:'Choose a profile picture you like',boy:'Boy',girl:'Girl',hint:'You can change it anytime',start:"Let's go"}:{hello:'환영해요!',sub:'리틀원스묵상 · 매일 묵상',q:'어떤 언어로 볼까요?',next:'다음',pick:'나를 골라 주세요',pickSub:'마음에 드는 프로필 그림을 선택해요',boy:'남자아이',girl:'여자아이',hint:'나중에 언제든 바꿀 수 있어요',start:'시작하기'};
- var h='<div class="row" style="margin-bottom:6px">'+(ui.ob===2?''+backBtn('obBack','',''+t('뒤로')+'','')+'':'')+'<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px"><div style="height:8px;border-radius:4px;background:#E0A82E"></div><div style="height:8px;border-radius:4px;background:'+(ui.ob===2?'#E0A82E':'#E4DDD3')+'"></div></div><span class="meta" style="font-weight:700">'+ui.ob+' / 2</span></div>';
+ var T=en?{hello:'Welcome!',sub:'Little ones QT · Daily Devotion',q:'Which language do you like?',next:'Next',pick:'Pick your look',pickSub:'Choose a profile picture you like',boy:'Boy',girl:'Girl',hint:'You can change it anytime',start:"Let's go",outfit:'Pick your first outfit',outfitSub:'These are your starting clothes. You will get more as gifts!',topQ:'Pick a top',botQb:'Pick pants',botQg:'Pick pants or a skirt',outHint:'You can change clothes anytime in My Profile'}:{hello:'환영해요!',sub:'리틀원스묵상 · 매일 묵상',q:'어떤 언어로 볼까요?',next:'다음',pick:'나를 골라 주세요',pickSub:'마음에 드는 프로필 그림을 선택해요',boy:'남자아이',girl:'여자아이',hint:'나중에 언제든 바꿀 수 있어요',start:'시작하기',outfit:'처음 입을 옷을 골라요',outfitSub:'이 옷이 내 기본 옷이에요. 나머지는 선물로 받아요!',topQ:'티셔츠를 하나 골라요',botQb:'바지를 하나 골라요',botQg:'바지나 치마를 하나 골라요',outHint:'옷은 프로필에서 언제든 바꿔 입을 수 있어요'};
+ var tot=ui.obRe?2:3,bars='';for(var bi=1;bi<=tot;bi++)bars+='<div style="height:8px;border-radius:4px;background:'+(ui.ob>=bi?'#E0A82E':'#E4DDD3')+'"></div>';
+ var h='<div class="row" style="margin-bottom:6px">'+(ui.ob>=2?backBtn('obBack','',t('뒤로'),''):'')+'<div style="flex:1;display:grid;grid-template-columns:repeat('+tot+',1fr);gap:6px">'+bars+'</div><span class="meta" style="font-weight:700">'+ui.ob+' / '+tot+'</span></div>';
  if(ui.ob===1){
   var card=function(code,big,label,sub,tbg,tfg){var on=S.lang===code;return '<button type="button" data-a="lang" data-v="'+code+'" aria-pressed="'+on+'" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px;border-radius:24px;border:3px solid '+(on?'#4A2C25':'#FFFFFF')+';background:'+(on?'#FBEBB8':'#FFFFFF')+'"><span style="width:52px;height:52px;border-radius:26px;background:'+tbg+';display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:26px;color:'+tfg+'">'+big+'</span><span class="disp" style="font-size:20px">'+label+'</span><span class="meta">'+sub+'</span></button>';};
   h+='<div class="stack"><div style="margin-top:8px;border-radius:28px;background:#F8C548;overflow:hidden;height:190px;display:flex;align-items:flex-end">'+sunScene(150)+'</div>'+
   '<div style="text-align:center"><h1 class="disp" style="font-size:30px">'+T.hello+'</h1><div class="meta" style="font-size:14px">'+T.sub+'</div></div>'+
   '<div class="disp" style="font-size:19px">'+T.q+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+card('ko','가','한국어','Korean','#F6D6D1','#A3423C')+card('en','A','English',isEn()?'':'영어','#E1DBF8','#5B4A9E')+'</div>'+
   '<button class="btn dark" type="button" data-a="obNext">'+T.next+'</button></div>';
+ }else if(ui.ob===3){
+  ensureStarter();var so=starterOpts(),st=ui.starter;
+  var sec=function(slot,title){var g='';so[slot].forEach(function(id){var on=st[slot]===id;g+='<button type="button" class="tile'+(on?' sel':'')+'" data-a="obPick" data-v="'+slot+':'+id+'" aria-pressed="'+on+'">'+itemThumb(slot,id,62)+'<span style="text-align:center;line-height:1.3">'+itemName(slot,id)+'</span></button>';});return '<div class="disp" style="font-size:18px">'+title+'</div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+g+'</div>';};
+  h+='<div class="stack" style="margin-top:10px"><div style="text-align:center"><h1 class="disp" style="font-size:28px">'+T.outfit+'</h1><div class="meta" style="font-size:14px">'+T.outfitSub+'</div></div><div style="display:flex;justify-content:center">'+avatarBody(110,Object.assign(defOutfit(),{shirt:st.shirt,bottom:st.bottom}))+'</div>'+sec('shirt',T.topQ)+sec('bottom',S.gender==='girl'?T.botQg:T.botQb)+'<div class="meta" style="text-align:center;font-size:13px">'+T.outHint+'</div><button class="btn dark" type="button" data-a="start">'+T.start+arrow()+'</button></div>';
  }else{
   var tab=function(g,l){var on=S.gender===g;return '<button type="button" data-a="gender" data-v="'+g+'" aria-pressed="'+on+'" style="height:44px;border:0;border-radius:22px;font-family:var(--display);font-size:17px;background:'+(on?'#4A2C25':'transparent')+';color:'+(on?'#FFFFFF':'#5E514A')+'">'+l+'</button>';};
   var avs='';for(var i=1;i<=3;i++){var on=S.avatar===i;avs+='<button type="button" data-a="pickAv" data-v="'+i+'" aria-label="'+t('프로필 그림 {n}',{n:i})+'" aria-pressed="'+on+'" style="width:100%;max-width:110px;aspect-ratio:1;padding:0;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:4px solid '+(on?'#4A2C25':'#FFFFFF')+';background:#FFFFFF;box-shadow:0 6px 14px rgba(74,44,37,'+(on?.22:.08)+')">'+avatar(110,null,S.gender,i)+'</button>';}
   h+='<div class="stack" style="margin-top:14px"><div style="text-align:center"><h1 class="disp" style="font-size:30px">'+T.pick+'</h1><div class="meta" style="font-size:14px">'+T.pickSub+'</div></div>'+
   '<div style="padding:5px;border-radius:26px;background:#E8E2D8;display:grid;grid-template-columns:1fr 1fr;gap:4px">'+tab('boy',T.boy)+tab('girl',T.girl)+'</div>'+
   '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;justify-items:center">'+avs+'</div>'+
-  '<div class="meta" style="text-align:center;font-size:13px">'+T.hint+'</div><button class="btn dark" type="button" data-a="start">'+T.start+arrow()+'</button></div>';
+  '<div class="meta" style="text-align:center;font-size:13px">'+T.hint+'</div><button class="btn dark" type="button" data-a="start">'+(ui.obRe?T.start:T.next)+arrow()+'</button></div>';
  }
  return h;
 };
@@ -3243,10 +3251,14 @@ var A={
  noop:function(){},
  setLang:function(v){if(v!=='ko'&&v!=='en')return;if(ui.playing)stopTTS();S.lang=v;ui.tr=v==='en'?'en':'ko';save();render();placeBack();},
  obNext:function(){ui.ob=2;render();},
- obBack:function(){ui.ob=1;render();},
- gender:function(v){S.gender=v;S.avatar=1;save();render();},
+ obBack:function(){ui.ob=Math.max(1,ui.ob-1);render();},
+ obPick:function(v){var p=String(v).split(':');if(p.length!==2)return;ensureStarter();if(starterOpts()[p[0]]&&starterOpts()[p[0]].indexOf(p[1])>=0){ui.starter[p[0]]=p[1];render();}},
+ gender:function(v){S.gender=v;S.avatar=1;ui.starter=null;save();render();},
  pickAv:function(v){S.avatar=+v;save();render();},
- start:function(){S.onboarded=true;save();go('home');},
+ start:function(){
+  if(ui.ob===2&&!ui.obRe){ui.ob=3;render();return;}
+  if(ui.ob===3&&!ui.obRe){ensureStarter();var sp=ui.starter;[sp.shirt,sp.bottom].forEach(function(id){if(S.unlocked.indexOf(id)<0)S.unlocked.push(id);});S.equipped=sp.shirt;S.outfit.shirt=sp.shirt;S.outfit.bottom=sp.bottom;}
+  ui.obRe=false;ui.starter=null;ui.ob=1;S.onboarded=true;save();go('home');},
  tr:function(v){if(ui.playing)stopTTS();ui.tr=v;render();},
  big:function(){ui.big=!ui.big;render();},
  read:function(){ui.read=true;render();},
@@ -3284,7 +3296,7 @@ var A={
  setCat:function(v){ui.cat=v;ui.preview=null;if(view!=='profile'){go('profile');var w=document.getElementById('wardrobe');if(w)w.scrollIntoView({block:'start',behavior:'smooth'});}else keepRender();},
  pickItem:function(id){var sl=slotOfItem(id);if(!sl)return;if(!owns(sl,id)){var rw=rewardWeekOf(id);toast(rw?(rw.i===0?t('이번 주 큐티를 5일 모두 마치면 열려요!'):t('{d} 주의 선물로 열려요!',{d:md(rw.date)})):t('5일 큐티를 마치면 열려요!'));return;}ui.cat=sl;ui.preview=id;keepRender();},
  wearItem:function(){var sl=ui.cat||'shirt',pv=ui.preview;if(!pv||slotOfItem(pv)!==sl||!owns(sl,pv)||outfit()[sl]===pv)return;S.outfit[sl]=pv;if(sl==='shirt')S.equipped=pv;ui.preview=null;ui.giftOpen=false;save();keepRender();toast(t('새 옷을 입었어요!'));},
- reprofile:function(){ui.ob=2;go('onboard');},
+ reprofile:function(){ui.ob=2;ui.obRe=true;go('onboard');},
  reset:function(){if(!ui.resetArm){ui.resetArm=true;render();return;}try{localStorage.removeItem(KEY);}catch(e){}S=defaults();ui.resetArm=false;ui.qDate=null;ui.q=freshQ();ui.ob=1;ui.giftOpen=false;ui.giftPick=null;ui.gsel=null;go('onboard');}
 };
 Object.assign(A,MEM_ACTIONS);

@@ -17,7 +17,7 @@ const server = p => p.evaluate(() => fetch('/api/progress', { headers: { 'X-IAM-
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', user); await p.fill('#f-password', 'sticker-1'); await p.fill('#f-password2', 'sticker-1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   await require('./_admin')(p, user); await p.waitForSelector('nav');   // uses later weekdays on a Wednesday
 
   console.log('\nOpening memory practice gives nothing');

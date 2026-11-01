@@ -50,7 +50,7 @@ const ANSWER = {
     await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
     await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]');
   }
-  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
+  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]'); }
   await p.waitForSelector('.daygrid');
   ok((await text(p, 'main')).includes('10월 4주'), 'week 10월 4주');
 

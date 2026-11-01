@@ -31,7 +31,7 @@ const stars = p => p.evaluate(() => document.querySelectorAll('.mtop .mstars svg
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', user); await p.fill('#f-password', 'memory-1'); await p.fill('#f-password2', 'memory-1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   await require('./_admin')(p, user); await p.waitForSelector('nav');   // practises every weekday on a Wednesday
 
   console.log('\nHome → practice');

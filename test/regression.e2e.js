@@ -39,7 +39,7 @@ const ok = (c, m) => { if (!c) { fails++; console.log('  ✗ ' + m); } };
       await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
       await check('recoverycode', en);
       await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.waitForTimeout(150);
-      await check('onboard1', en); await p.click('[data-a=obNext]'); await check('onboard2', en); await p.click('[data-a=start]');
+      await check('onboard1', en); await p.click('[data-a=obNext]'); await check('onboard2', en); await p.click('[data-a=start]'); await check('onboard3', en); await p.click('[data-a=start]');
       await check('home', en);
       if (await p.$('.wkb')) { await p.click('.wkb'); await p.waitForTimeout(150); await check('home_otherweek', en); await go('bible'); await check('bible_otherweek', en); await go('home'); await p.click('.wkb'); await p.waitForTimeout(150); }
       await go('bible'); await check('bible', en);

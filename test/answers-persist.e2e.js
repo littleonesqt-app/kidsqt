@@ -56,7 +56,7 @@ async function newPage(b, when) {
     await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
     await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]');
   }
-  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
+  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]'); }
   await p.waitForSelector('.daygrid');
   return p;
 }

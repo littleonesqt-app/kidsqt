@@ -20,7 +20,25 @@ const navTo = async (p, v) => { await p.evaluate(v => document.querySelector('na
     await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
     await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]');
   }
-  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
+  if (await p.$('[data-a=obNext]')) {
+    await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.waitForSelector('[data-a=obPick]');
+    console.log('\nFirst-time outfit (boy)');
+    const bt = await p.$$eval('[data-a=obPick][data-v^="bottom:"]', els => els.map(e => e.dataset.v));
+    ok(bt.length >= 3 && bt.every(v => !/skirt/.test(v)), 'a boy picks his first bottom from pants/shorts only (' + bt.length + ')');
+    ok((await p.$$('[data-a=obPick][data-v^="shirt:"]')).length >= 4, 'and a first tee');
+    await p.click('[data-a=obPick][data-v="shirt:star"]'); await p.click('[data-a=obPick][data-v="bottom:b_shorts_denim"]');
+    ok((await p.getAttribute('[data-a=obPick][data-v="shirt:star"]', 'aria-pressed')) === 'true', 'the chosen tee is marked');
+    await p.click('[data-a=start]');
+  }
+  await p.waitForSelector('.daygrid');
+  {
+    await navTo(p, 'profile'); await p.click('[data-a=setCat][data-v=shirt]'); await p.waitForTimeout(150);
+    ok((await p.$$('#wardrobe .tile:not(.locked)')).length === 2, 'tees: only the basic tee and the chosen one are open, all others are gifts');
+    await p.click('[data-a=setCat][data-v=bottom]'); await p.waitForTimeout(150);
+    ok((await p.$$('#wardrobe .tile:not(.locked)')).length === 2, 'bottoms: only the basic and the chosen one are open');
+    ok(await p.$('#wardrobe [data-a=pickItem][data-v=b_shorts_denim]:not(.locked)') !== null, 'the chosen shorts are open');
+    await navTo(p, 'home');
+  }
   await p.waitForSelector('.daygrid');
 
   console.log('\nBoys and girls');

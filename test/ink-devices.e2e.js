@@ -28,7 +28,7 @@ async function open(b, [name, w, h, dpr], opts) {
     await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
     await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]');
   }
-  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
+  if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]'); }
   await p.waitForSelector('.daygrid');
   await p.click('.daycard[data-v="2026-10-19"]'); await p.waitForSelector('#qcard-2');
   p.cdp = await ctx.newCDPSession(p);
@@ -105,7 +105,7 @@ async function reset(p) { // remove saved handwriting so the next scenario start
     if (/^file:/.test(BASE)) await ctx.addInitScript(() => document.addEventListener('DOMContentLoaded', () => { const m = document.createElement('meta'); m.name = 'viewport'; m.content = 'width=device-width,initial-scale=1'; document.head.appendChild(m); }));
     const p = await ctx.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(e.message)); await p.goto(BASE); await p.waitForTimeout(500);
     if (await p.$('form[data-form=login]')) { const u = 'ik' + String(Date.now()).slice(-8) + 'd'; await p.click('[data-a=authMode][data-v=signup]'); await p.fill('#f-username', u); await p.fill('#f-password', 'ink-device1'); await p.fill('#f-password2', 'ink-device1'); await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode'); await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); }
-    if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); }
+    if (await p.$('[data-a=obNext]')) { await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]'); }
     await p.waitForSelector('.daygrid'); await p.click('.daycard[data-v="2026-10-26"]'); await p.waitForSelector('#qcard-0 .qdraw');
     p.cdp = await ctx.newCDPSession(p);
     await p.click('#qcard-0 .qdraw'); await p.waitForSelector('.ink canvas'); await p.waitForTimeout(450);

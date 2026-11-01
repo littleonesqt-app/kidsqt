@@ -22,7 +22,7 @@ async function signup(p) {
   await p.click('[data-a=authMode][data-v=signup]');
   await p.fill('#f-username', u); await p.fill('#f-password', 'weeks-pass1'); await p.fill('#f-password2', 'weeks-pass1');
   await p.click('form[data-form=signup] button[type=submit]'); await p.waitForSelector('.rcode');
-  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]');
+  await p.click('[data-a=rcAck]'); await p.click('[data-a=rcDone]'); await p.click('[data-a=obNext]'); await p.click('[data-a=start]'); await p.click('[data-a=start]');
   await p.waitForSelector('.daygrid'); p.user = u; return u;
 }
 async function draw(p) {

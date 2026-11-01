@@ -78,7 +78,7 @@ async function doQT(p, key) {
   const code = await signup(ipad, 'happykid123', 'sunny-day');
   ok(/^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(code), 'recovery code shown once: ' + code);
   ok(/어떤 언어로 볼까요/.test(await text(ipad)), 'new account goes to the existing onboarding');
-  await click(ipad, '[data-a=obNext]'); await click(ipad, '[data-a=gender][data-v=girl]'); await click(ipad, '[data-a=pickAv][data-v="3"]'); await click(ipad, '[data-a=start]');
+  await click(ipad, '[data-a=obNext]'); await click(ipad, '[data-a=gender][data-v=girl]'); await click(ipad, '[data-a=pickAv][data-v="3"]'); await click(ipad, '[data-a=start]'); await click(ipad, '[data-a=start]');
   ok(/좋은|즐거운|편안한/.test(await text(ipad)), 'lands on Home');
 
   step('2. Monday QT on the iPad, saved to the account');
@@ -121,7 +121,7 @@ async function doQT(p, key) {
   await settle(ipad);
   st = await synced(ipad);
   ok(Object.keys(st.state.days).length === 5, 'server has all 5 days');
-  ok(Object.keys(st.state.claimed).length === 1 && st.state.unlocked.includes('star') && !st.state.unlocked.includes('heart') && st.state.unlocked.length === 2, 'gift claimed once: only the ONE chosen shirt is unlocked');
+  ok(Object.keys(st.state.claimed).length === 1 && st.state.unlocked.includes('star') && !st.state.unlocked.includes('heart') && st.state.unlocked.length === 4, 'gift claimed once: only the ONE chosen shirt is unlocked on top of the starter outfit (basic + first-time tee and bottom)');
   ok(st.state.equipped === 'star' && st.state.outfit.shirt === 'star', 'avatar outfit saved');
   ok(st.state.lang === 'en' && st.state.gender === 'girl' && st.state.avatar === 3, 'language and profile picture saved');
   await shot(ipad, 'e2e_ipad_profile');
@@ -190,7 +190,7 @@ async function doQT(p, key) {
   step('10. A different account sees nothing from the first one');
   const other = await device(b, 'Other');
   await signup(other, 'kid_two', 'rainbow-7');
-  await click(other, '[data-a=obNext]'); await click(other, '[data-a=start]');
+  await click(other, '[data-a=obNext]'); await click(other, '[data-a=start]'); await click(other, '[data-a=start]');
   const o = await server(other);
   ok(Object.keys(o.state.days).length === 0 && Object.keys(o.state.notes).length === 0 && Object.keys(o.state.stickers).length === 0, 'kid_two starts empty');
   await other.evaluate(() => document.querySelector('nav [data-v="thanks"]').click()); await other.waitForTimeout(100);
