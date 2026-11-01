@@ -1,0 +1,14 @@
+{
+  "name": "IAM Church 키즈 묵상",
+  "short_name": "IAM 묵상",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F3F0EA",
+  "theme_color": "#F3F0EA",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

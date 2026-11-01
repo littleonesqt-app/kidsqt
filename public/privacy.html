@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#F3F0EA">
+<title>개인정보 안내 · Privacy</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--bg:#F3F0EA;--ink:#3A2620;--muted:#75685F;--brown:#4A2C25}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;word-break:keep-all}
+main{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:26px;margin:0 0 4px}
+h2{font-size:18px;margin:0 0 8px}
+.card{background:#fff;border-radius:22px;padding:18px;margin-top:14px}
+.meta{color:var(--muted);font-size:14px}
+ul{margin:6px 0 0;padding-left:20px}
+.lang{display:flex;gap:6px;margin:12px 0 0}
+.lang a{padding:6px 14px;border-radius:16px;background:#fff;color:var(--ink);text-decoration:none;font-weight:700;font-size:14px}
+.en{display:none}
+:target.en,:target~.en{display:block}
+#en:target~#ko{display:none}
+a.back{display:inline-block;margin-top:18px;padding:12px 20px;border-radius:24px;background:var(--brown);color:#fff;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<div class="lang"><a href="#ko">한국어</a><a href="#en">English</a></div>
+
+<section id="en" class="en">
+<h1>Privacy notice</h1>
+<div class="meta">IAM Church Sunday School · Kids Daily QT app</div>
+<div class="card"><h2>What the app stores</h2><ul>
+<li>A username the child chooses (please use a nickname, not a real name).</li>
+<li>The password and recovery code, stored only as one-way Argon2id hashes. Nobody, including the church, can read them.</li>
+<li>QT progress: finished days, answers (including pictures drawn for a QT question), thank-you notes (typed and handwritten), stickers, avatar choices, language, memory-verse stars.</li>
+<li>Memory-verse voice recordings, only when the child records and taps Upload on Friday's practice. The microphone is used only while recording. The newest 5 recordings per verse are kept, and the child can delete any of them.</li></ul></div>
+<div class="card"><h2>What the app never asks for</h2><ul>
+<li>No email address, phone number, real name, birthday, photo or location.</li>
+<li>No ads, no tracking, no analytics, no third-party sharing.</li></ul></div>
+<div class="card"><h2>Where it is kept</h2><ul>
+<li>On the church's own app server. A single sign-in cookie keeps the child logged in.</li>
+<li>The device also keeps a copy so the app works offline. Logging out removes that copy, which matters on shared church iPads.</li>
+<li>Only the signed-in child can see their progress in the app. The church's server administrator can access the database to keep it running.</li></ul></div>
+<div class="card"><h2>For parents</h2><ul>
+<li>Please create or approve your child's account and keep the recovery code. Without an email address, the recovery code is the only way to reset a forgotten password. If it is lost too, the church's IT administrator can reset the account.</li>
+<li>You can delete the account and all its data, including recordings, at any time: Profile → Delete account. You can also ask the church to do it.</li></ul></div>
+<a class="back" href="/">Back to the app</a>
+</section>
+
+<section id="ko">
+<h1>개인정보 안내</h1>
+<div class="meta">IAM Church 주일학교 · 어린이 매일 묵상 앱</div>
+<div class="card"><h2>앱에 저장되는 것</h2><ul>
+<li>아이가 정한 아이디 (진짜 이름 대신 별명을 써 주세요)</li>
+<li>비밀번호와 복구 코드: 되돌릴 수 없는 Argon2id 방식으로만 저장되어, 교회를 포함해 아무도 원래 내용을 볼 수 없어요.</li>
+<li>큐티 기록: 마친 날, 답(묵상 문제에 그린 그림 포함), 감사 노트(글·손글씨), 스티커, 아바타, 언어 설정, 암송 별</li>
+<li>암송 녹음: 금요일 암송 연습에서 아이가 직접 녹음하고 '올리기'를 누를 때만 저장돼요. 마이크는 녹음하는 동안에만 써요. 구절마다 최근 녹음 5개만 남고, 아이가 언제든 지울 수 있어요.</li></ul></div>
+<div class="card"><h2>앱이 절대 묻지 않는 것</h2><ul>
+<li>이메일, 전화번호, 실명, 생일, 사진, 위치를 받지 않아요.</li>
+<li>광고, 추적, 분석 도구가 없고, 다른 곳에 정보를 넘기지 않아요.</li></ul></div>
+<div class="card"><h2>어디에 보관되나요</h2><ul>
+<li>교회가 운영하는 앱 서버에 보관돼요. 로그인을 유지하는 쿠키 하나만 써요.</li>
+<li>인터넷이 끊겨도 쓸 수 있도록 기기에도 사본을 두고, 로그아웃하면 그 사본을 지워요. (교회 공용 아이패드에서 중요해요)</li>
+<li>앱에서는 로그인한 아이 본인만 자기 기록을 볼 수 있어요. 서버 관리를 맡은 교회 IT 담당자는 운영을 위해 데이터베이스에 접근할 수 있어요.</li></ul></div>
+<div class="card"><h2>부모님께</h2><ul>
+<li>아이 계정은 부모님이 함께 만들거나 허락해 주시고, 복구 코드를 보관해 주세요. 이메일이 없기 때문에 비밀번호를 잊으면 복구 코드로만 새 비밀번호를 만들 수 있어요. 복구 코드도 잃어버렸다면 교회 IT 담당자가 계정을 다시 열어 드릴 수 있어요.</li>
+<li>언제든지 계정과 녹음을 포함한 모든 기록을 지울 수 있어요: 프로필 → 계정 삭제. 교회에 요청하셔도 돼요.</li></ul></div>
+<a class="back" href="/">앱으로 돌아가기</a>
+</section>
+</main>
+</body>
+</html>

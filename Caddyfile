@@ -1,0 +1,5 @@
+# Replace with the address the church will use. Its DNS must point at this server (ports 80 and 443 open).
+qt.example-church.org {
+	encode gzip
+	reverse_proxy app:3000
+}

@@ -1,0 +1,19 @@
+{
+  "name": "iamkids-qt",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IAM Church Sunday School daily QT app with username/password accounts and cloud saving",
+  "main": "server/index.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "COOKIE_SECURE=false node server/index.js",
+    "test": "node --test test/api.test.js",
+    "test:e2e": "bash test/run-e2e.sh",
+    "admin": "node server/admin.js"
+  },
+  "dependencies": {
+    "argon2": "0.41.1",
+    "express": "4.22.3"
+  }
+}
