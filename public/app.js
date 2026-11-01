@@ -2416,7 +2416,7 @@ function memSay(txt){
   window.speechSynthesis.speak(u);}catch(e){}
 }
 /* Monday: listen to a phrase, then a quiet gap (length follows the phrase) for the child to say it back */
-function memWaitMs(p){var n=String(p).split(/\s+/).length;return Math.min(9000,3000+900*n);}
+function memWaitMs(p){var n=String(p).split(/\s+/).length;return Math.min(6000,Math.max(2500,1500+600*n));}
 function memNextPhrase(i,tok){
  var st=ui.mem&&ui.mem.st;if(!st||tok!==ttsToken||view!=='memory')return;
  clearTimeout(MemRec.wt);st.wait=-1;memSpeak(i+1,tok);
