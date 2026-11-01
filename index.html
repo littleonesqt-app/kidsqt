@@ -849,7 +849,7 @@ var VERSES=[
 var FACE='<ellipse cx="19.8" cy="27.6" rx="1.9" ry="2.3" fill="#3A2620"/><circle cx="19.2" cy="26.7" r=".85" fill="#fff"/><ellipse cx="28.2" cy="27.6" rx="1.9" ry="2.3" fill="#3A2620"/><circle cx="27.6" cy="26.7" r=".85" fill="#fff"/><ellipse cx="16.6" cy="31.6" rx="2.7" ry="1.8" fill="#F7A39A" opacity=".8"/><ellipse cx="31.4" cy="31.6" rx="2.7" ry="1.8" fill="#F7A39A" opacity=".8"/><path d="M22.2 31.6q1.8 1.9 3.6 0" fill="none" stroke="#B5523F" stroke-width="1.3" stroke-linecap="round"/>';
 var AV={
  boy:[
-  {bg:'#A9C66F',shirt:'#F8C548',skin:'#FBD9BF',back:'',front:'<path d="M13 25a11 11 0 0 1 22 0c-3-4-7-5.5-11-5.5S16 21 13 25z" fill="#5A3A2E"/><path d="M21 15.5q3-3.5 6-.5" fill="none" stroke="#5A3A2E" stroke-width="2" stroke-linecap="round"/>'},
+  {bg:'#A9C66F',shirt:'#F8C548',skin:'#FBD9BF',back:'',front:'<path d="M13 25a11 11 0 0 1 22 0c-3-4-7-5.5-11-5.5S16 21 13 25z" fill="#5A3A2E"/><path d="M19.6 18.8l1.2-5.2 2.6 3.8 2.4-4.8 2.2 4.6 2-3 .6 4.6z" fill="#5A3A2E"/>'},
   {bg:'#C9BEF2',shirt:'#7FA44E',skin:'#F2C3A0',back:'',front:'<path d="M13 26c0-7 5-12 11-12s11 5 11 11c-4-1-8-3-10-6-3 4-7 6-12 7z" fill="#2E2420"/>'},
   {bg:'#F6B19A',shirt:'#9B8AE3',skin:'#FBD9BF',back:'',front:'<g fill="#7A4A2A"><circle cx="14.5" cy="22" r="4"/><circle cx="18.5" cy="17.5" r="4.5"/><circle cx="24" cy="15.5" r="5"/><circle cx="29.5" cy="17.5" r="4.5"/><circle cx="33.5" cy="22" r="4"/></g>'}
  ],
@@ -964,20 +964,20 @@ function claimGift(wk){
  var p=wk.split('-'),mon=new Date(+p[0],+p[1]-1,+p[2]);
  if(giftState(mon)!=='ready')return;
  /* the Friday gift is ONE item: the child picks it from this week's category, then confirms */
- ui.giftPick=wk;ui.gsel=null;ui.giftOpen=false;ui.cat=reward(wk).category;ui.preview=null;
+ ui.giftPick=wk;ui.gsel={};ui.giftOpen=false;ui.cat=reward(wk).category;ui.preview=null;
  go('profile');
 }
 function giftSel(id){
  if(!ui.giftPick||reward(ui.giftPick).items.indexOf(id)<0)return;
- ui.gsel=id;ui.cat=reward(ui.giftPick).category;ui.preview=id;keepRender();
+ var sl=slotOfItem(id);if(!sl)return;ui.gsel=ui.gsel||{};ui.gsel[sl]=id;ui.cat=sl;ui.preview=id;keepRender();
 }
 function giftConfirm(){
- var wk=ui.giftPick,id=ui.gsel;if(!wk||!id)return;
- var p=wk.split('-'),mon=new Date(+p[0],+p[1]-1,+p[2]);
- if(giftState(mon)!=='ready'||reward(wk).items.indexOf(id)<0)return;
- S.claimed[wk]=true;if(S.unlocked.indexOf(id)<0)S.unlocked.push(id);
+ var wk=ui.giftPick,gs=ui.gsel||{};if(!wk)return;
+ var r=reward(wk),p=wk.split('-'),mon=new Date(+p[0],+p[1]-1,+p[2]);
+ if(giftState(mon)!=='ready'||!r.cats.length||!r.cats.every(function(c){return gs[c.slot]&&c.items.indexOf(gs[c.slot])>=0;}))return;
+ S.claimed[wk]=true;r.cats.forEach(function(c){if(S.unlocked.indexOf(gs[c.slot])<0)S.unlocked.push(gs[c.slot]);});
  save();
- ui.giftPick=null;ui.gsel=null;ui.giftOpen=true;ui.cat=reward(wk).category;ui.preview=id;
+ ui.giftPick=null;ui.giftOpen=true;ui.cat=r.cats[0].slot;ui.preview=gs[r.cats[0].slot];ui.gsel={};
  keepRender();
 }
 function giftSvg(n,st){return '<svg width="'+n+'" height="'+n+'" viewBox="0 0 48 48" aria-hidden="true" style="'+(st||'')+'"><ellipse cx="18" cy="12" rx="7" ry="5" fill="#F8C548" transform="rotate(-25 18 12)"/><ellipse cx="30" cy="12" rx="7" ry="5" fill="#F8C548" transform="rotate(25 30 12)"/><rect x="8" y="22" width="32" height="20" rx="4" fill="#B7A8EE"/><rect x="6" y="15" width="36" height="9" rx="4" fill="#9B8AE3"/><rect x="21" y="15" width="6" height="27" fill="#F8C548"/><circle cx="24" cy="15" r="3.5" fill="#E0A82E"/></svg>';}
@@ -1880,141 +1880,409 @@ V.calendar=function(){
 };
 /* ===================== Full-body avatar + wardrobe =====================
    Outfit is stored per slot in S.outfit. Items are drawn on the matching body part; tops reuse SHIRTS.
-   Weekly rewards rotate through the slots in REWARD_ORDER, keyed by each week's Monday. */
-var SLOTS=['shirt','bottom','hair','shoes','head','face','acc'];
-var SLOT_LABEL={shirt:'티셔츠',bottom:'바지 · 치마',hair:'머리',shoes:'신발',head:'모자 · 리본',face:'얼굴',acc:'액세서리'};
+   Every item may carry g:'m' (boys only) or g:'f' (girls only); no g = both. Boys never see skirts.
+   Weekly rewards follow SCHEDULE (keyed by each week's Monday, YYYY-M-D); after the schedule ends they rotate through REWARD_ORDER. */
+var SLOTS=['shirt','outer','bottom','shoes','glove','head','fa','face','hair','acc','prop'];
+var SLOT_LABEL={shirt:'티셔츠 · 스웨터',outer:'판초',bottom:'바지 · 치마',shoes:'신발',glove:'장갑',head:'모자 · 리본',fa:'안경 · 머리띠',face:'표정',hair:'머리',acc:'가방 · 목도리',prop:'소품'};
+function slotLabel(sl){return sl==='bottom'&&S.gender!=='girl'?'바지':SLOT_LABEL[sl];}
+function gk(){return S.gender==='girl'?'f':'m';}
+function shade(h,p){var n=parseInt(h.slice(1),16),r=n>>16,g=n>>8&255,b=n&255,tg=p<0?0:255,q=Math.abs(p);r=Math.round((tg-r)*q+r);g=Math.round((tg-g)*q+g);b=Math.round((tg-b)*q+b);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function mir(s){return '<g transform="translate(120 0) scale(-1 1)">'+s+'</g>';}
+/* tops: the original tees + winter sweaters (long sleeves) */
+SHIRTS[0].def=true;SHIRTS[0].en='Basic Tee';
+SHIRTS.forEach(function(s){if(s.id==='heart')s.g='f';});
+SHIRTS.push(
+ {id:'sw_snow',name:'눈꽃 스웨터',en:'Snowflake Sweater',color:'#EADFC8',pattern:'snow',long:1},
+ {id:'sw_stripe',name:'줄무늬 스웨터',en:'Striped Sweater',color:'#3F5A8F',pattern:'stripe',long:1},
+ {id:'sw_bear',name:'곰돌이 스웨터',en:'Teddy Sweater',color:'#B98A62',pattern:'bear',long:1},
+ {id:'sw_turtle',name:'노랑 목폴라',en:'Yellow Turtleneck',color:'#F2BE3E',pattern:'none',long:1,neck:'turtle'},
+ {id:'sw_hoodie',name:'파랑 후드티',en:'Blue Hoodie',color:'#5F86C4',pattern:'hoodie',long:1,neck:'hood',g:'m'},
+ {id:'sw_argyle',name:'체크 니트',en:'Argyle Knit',color:'#9AA3B5',pattern:'argyle',long:1,g:'m'},
+ {id:'sw_heart',name:'하트 니트',en:'Heart Knit',color:'#F4B6BF',pattern:'hearts',long:1,g:'f'},
+ {id:'sw_cardi',name:'라벤더 가디건',en:'Lavender Cardigan',color:'#C9BEF2',pattern:'cardi',long:1,neck:'cardi',g:'f'},
+ {id:'sw_mint',name:'민트 꽈배기',en:'Mint Cable Knit',color:'#B7DDC9',pattern:'cable',long:1,g:'f'}
+);
+Object.assign(SHIRT_EN,{sw_snow:'Snowflake Sweater',sw_stripe:'Striped Sweater',sw_bear:'Teddy Sweater',sw_turtle:'Yellow Turtleneck',sw_hoodie:'Blue Hoodie',sw_argyle:'Argyle Knit',sw_heart:'Heart Knit',sw_cardi:'Lavender Cardigan',sw_mint:'Mint Cable Knit'});
+Object.assign(PAT_TEE,{
+ snow:'<g stroke="#8FB8E6" stroke-width="1.6" stroke-linecap="round"><path d="M24 22v14M17.9 25.5l12.2 7M17.9 32.5l12.2-7"/></g><circle cx="24" cy="29" r="1.6" fill="#8FB8E6"/>',
+ stripe:'<g fill="#FFFFFF"><rect x="4" y="23" width="40" height="3.2"/><rect x="4" y="29.5" width="40" height="3.2"/><rect x="4" y="36" width="40" height="3.2"/></g>',
+ bear:'<circle cx="24" cy="29.5" r="6.6" fill="#8A5A3A"/><circle cx="18.8" cy="24" r="2.5" fill="#8A5A3A"/><circle cx="29.2" cy="24" r="2.5" fill="#8A5A3A"/><circle cx="24" cy="31.6" r="2.7" fill="#F1D6B8"/><circle cx="21.6" cy="28.2" r=".9" fill="#3A2620"/><circle cx="26.4" cy="28.2" r=".9" fill="#3A2620"/><circle cx="24" cy="30.6" r=".9" fill="#3A2620"/>',
+ hoodie:'<path d="M15 36h18l1.4 7H13.6z" fill="#000" opacity=".12"/><path d="M21 22v8M27 22v8" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/><circle cx="21" cy="31" r="1.1" fill="#FFFFFF"/><circle cx="27" cy="31" r="1.1" fill="#FFFFFF"/>',
+ argyle:'<g fill="none" stroke="#FFFFFF" stroke-opacity=".75" stroke-width="1.5"><path d="M24 21l7 8-7 8-7-8z"/><path d="M10 29l7-8M38 29l-7-8M10 29l7 8M38 29l-7 8"/></g><path d="M24 24.5l3.6 4.5-3.6 4.5-3.6-4.5z" fill="#E8A5B0"/>',
+ hearts:'<g fill="#FFFFFF"><path d="M24 36s-5-3-5-6.2a2.6 2.6 0 0 1 5-1.3 2.6 2.6 0 0 1 5 1.3c0 3.2-5 6.2-5 6.2z"/></g><g fill="#E8628F" opacity=".85"><circle cx="14" cy="26" r="1.5"/><circle cx="34" cy="26" r="1.5"/><circle cx="16" cy="36" r="1.5"/><circle cx="32" cy="36" r="1.5"/></g>',
+ cardi:'<path d="M24 20v24" stroke="#A89BE0" stroke-width="1.4"/><g fill="#FFFFFF"><circle cx="24" cy="25" r="1.3"/><circle cx="24" cy="31" r="1.3"/><circle cx="24" cy="37" r="1.3"/></g>',
+ cable:'<g fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="1.4" stroke-linecap="round"><path d="M18 22q3 3 0 6t0 6t0 6M24 22q-3 3 0 6t0 6t0 6M30 22q3 3 0 6t0 6t0 6"/></g>'
+});
+/* ----- items ----- */
 var ITEMS={
  bottom:[
-  {id:'b_basic',name:'기본 바지',type:'pants',color:'#6F86B5',def:true},
-  {id:'b_shorts_sky',name:'하늘 반바지',type:'shorts',color:'#9CCBE8'},
-  {id:'b_skirt_pink',name:'핑크 치마',type:'skirt',color:'#F2A79E'},
-  {id:'b_pants_choco',name:'초코 바지',type:'pants',color:'#7A5C4E'},
-  {id:'b_skirt_lav',name:'라벤더 치마',type:'skirt',color:'#B7A8EE'},
-  {id:'b_shorts_mint',name:'초록 반바지',type:'shorts',color:'#A9C66F'}],
+  {id:'b_basic',name:'기본 바지',en:'Basic Pants',type:'pants',shape:'straight',color:'#6F86B5',def:true,g:'m'},
+  {id:'b_skirt_basic',name:'기본 치마',en:'Basic Skirt',type:'skirt',shape:'a',color:'#9DB4DD',def:true,g:'f'},
+  {id:'b_shorts_sky',name:'하늘 반바지',en:'Sky Shorts',type:'shorts',color:'#9CCBE8'},
+  {id:'b_shorts_mint',name:'초록 반바지',en:'Green Shorts',type:'shorts',color:'#A9C66F'},
+  {id:'b_shorts_denim',name:'청반바지',en:'Denim Shorts',type:'shorts',shape:'cargo',color:'#5F86C4',g:'m'},
+  {id:'b_pants_choco',name:'초코 바지',en:'Chocolate Pants',type:'pants',shape:'straight',color:'#7A5C4E'},
+  {id:'b_skirt_pink',name:'핑크 주름치마',en:'Pink Pleated Skirt',type:'skirt',shape:'pleat',color:'#F2A79E',g:'f'},
+  {id:'b_skirt_lav',name:'라벤더 튤립치마',en:'Lavender Tutu',type:'skirt',shape:'tutu',color:'#B7A8EE',g:'f'},
+  {id:'b_skirt_plaid',name:'체크 치마',en:'Plaid Skirt',type:'skirt',shape:'plaid',color:'#D96A6A',g:'f'},
+  {id:'b_skirt_mint',name:'민트 프릴치마',en:'Mint Frill Skirt',type:'skirt',shape:'tier',color:'#A8D8C4',g:'f'},
+  {id:'p_jeans',name:'청바지',en:'Blue Jeans',type:'pants',shape:'jean',color:'#5E7FB5'},
+  {id:'p_cargo',name:'카고 바지',en:'Cargo Pants',type:'pants',shape:'cargo',color:'#B9A88A'},
+  {id:'p_jogger',name:'회색 조거팬츠',en:'Gray Joggers',type:'pants',shape:'jogger',color:'#9AA0AD'},
+  {id:'p_cord',name:'골덴 바지',en:'Corduroy Pants',type:'pants',shape:'cord',color:'#8A5A3A',g:'m'},
+  {id:'p_navy',name:'네이비 슬랙스',en:'Navy Slacks',type:'pants',shape:'straight',color:'#3E4A6E',g:'m'},
+  {id:'p_wide',name:'크림 와이드팬츠',en:'Cream Wide Pants',type:'pants',shape:'wide',color:'#EDE0C8',g:'f'},
+  {id:'p_flare',name:'나팔 청바지',en:'Flare Jeans',type:'pants',shape:'flare',color:'#8FB0DA',g:'f'},
+  {id:'p_legging',name:'라벤더 레깅스',en:'Lavender Leggings',type:'pants',shape:'legging',color:'#B7A8EE',g:'f'},
+  {id:'p_pinkjog',name:'핑크 조거팬츠',en:'Pink Joggers',type:'pants',shape:'jogger',color:'#F2A79E',g:'f'}],
  hair:[
-  {id:'h_default',name:'원래 머리',def:true},
-  {id:'h_black',name:'까만 머리',color:'#2E2420'},
-  {id:'h_caramel',name:'캐러멜 머리',color:'#B07A4A'},
-  {id:'h_honey',name:'꿀색 머리',color:'#D9A441'},
-  {id:'h_berry',name:'베리 머리',color:'#9A4A52'},
-  {id:'h_bun',name:'똥머리',style:'bun'}],
+  {id:'h_default',name:'원래 머리',en:'My Hair',def:true},
+  {id:'h_black',name:'까만 머리',en:'Black Hair',color:'#2E2420'},
+  {id:'h_caramel',name:'캐러멜 머리',en:'Caramel Hair',color:'#B07A4A'},
+  {id:'h_honey',name:'꿀색 머리',en:'Honey Hair',color:'#D9A441'},
+  {id:'h_berry',name:'베리 머리',en:'Berry Hair',color:'#9A4A52',g:'f'},
+  {id:'h_spiky',name:'삐죽삐죽 머리',en:'Spiky Hair',style:'spiky',g:'m'},
+  {id:'h_curly',name:'곱슬 머리',en:'Curly Hair',style:'curly',g:'m'},
+  {id:'h_quiff',name:'올림 머리',en:'Quiff',style:'quiff',color:'#4A3226',g:'m'},
+  {id:'h_bun',name:'똥머리',en:'Top Bun',style:'bun',g:'f'},
+  {id:'h_buns',name:'양갈래 똥머리',en:'Twin Buns',style:'buns',g:'f'},
+  {id:'h_pig',name:'땋은 양갈래',en:'Pigtails',style:'pig',g:'f'},
+  {id:'h_pony',name:'포니테일',en:'Ponytail',style:'pony',g:'f'},
+  {id:'h_long',name:'긴 웨이브 머리',en:'Long Wavy Hair',style:'long',color:'#7A4A2A',g:'f'}],
  shoes:[
-  {id:'s_basic',name:'하얀 운동화',type:'sneaker',color:'#FFFFFF',def:true},
-  {id:'s_pink',name:'핑크 운동화',type:'sneaker',color:'#E8628F'},
-  {id:'s_yellow',name:'노란 운동화',type:'sneaker',color:'#F8C548'},
-  {id:'s_lav',name:'보라 운동화',type:'sneaker',color:'#9B8AE3'},
-  {id:'s_boots',name:'초코 부츠',type:'boots',color:'#7A5C4E'},
-  {id:'s_rain',name:'하늘 장화',type:'boots',color:'#9CCBE8'}],
+  {id:'s_basic',name:'하얀 운동화',en:'White Sneakers',type:'sneaker',color:'#FFFFFF',def:true},
+  {id:'s_pink',name:'핑크 운동화',en:'Pink Sneakers',type:'sneaker',color:'#E8628F',g:'f'},
+  {id:'s_yellow',name:'노란 운동화',en:'Yellow Sneakers',type:'sneaker',color:'#F8C548'},
+  {id:'s_lav',name:'보라 운동화',en:'Purple Sneakers',type:'sneaker',color:'#9B8AE3',g:'f'},
+  {id:'s_boots',name:'초코 부츠',en:'Chocolate Boots',type:'boots',color:'#7A5C4E'},
+  {id:'s_rain',name:'하늘 장화',en:'Sky Rain Boots',type:'boots',color:'#9CCBE8'},
+  {id:'s_ugg',name:'카라멜 어그부츠',en:'Caramel Ugg Boots',type:'ugg',color:'#C99A6A'},
+  {id:'s_ugg_pink',name:'핑크 어그부츠',en:'Pink Ugg Boots',type:'ugg',color:'#F0B4C2',g:'f'},
+  {id:'s_ugg_gray',name:'회색 어그부츠',en:'Gray Ugg Boots',type:'ugg',color:'#A9ADB8',g:'m'},
+  {id:'s_fur',name:'하얀 털부츠',en:'Fluffy White Boots',type:'ugg',color:'#F4EEE6',cuff:'#FFFFFF',g:'f'},
+  {id:'s_snow',name:'눈길 부츠',en:'Snow Boots',type:'snow',color:'#4F6FA8',g:'m'},
+  {id:'s_hitop',name:'빨강 농구화',en:'Red High-tops',type:'hitop',color:'#E0523A',g:'m'},
+  {id:'s_mary',name:'리본 구두',en:'Ribbon Mary Janes',type:'mary',color:'#C2456F',g:'f'},
+  {id:'s_ballet',name:'발레 슈즈',en:'Ballet Flats',type:'ballet',color:'#F4B6C6',g:'f'}],
  head:[
-  {id:'hd_none',name:'없음',def:true},
-  {id:'hd_cap',name:'주황 모자',type:'cap',color:'#E0743A'},
-  {id:'hd_bow',name:'핑크 리본',type:'bow',color:'#E8628F'},
-  {id:'hd_crown',name:'반짝 왕관',type:'crown',color:'#F8C548'},
-  {id:'hd_flower',name:'꽃 핀',type:'flower',color:'#F2A79E'},
-  {id:'hd_beanie',name:'보라 털모자',type:'beanie',color:'#9B8AE3'}],
+  {id:'hd_none',name:'없음',en:'None',def:true},
+  {id:'hd_cap',name:'주황 모자',en:'Orange Cap',type:'cap',color:'#E0743A'},
+  {id:'hd_bow',name:'핑크 리본',en:'Pink Bow',type:'bow',color:'#E8628F',g:'f'},
+  {id:'hd_crown',name:'반짝 왕관',en:'Sparkly Crown',type:'crown',color:'#F8C548'},
+  {id:'hd_flower',name:'꽃 핀',en:'Flower Clip',type:'flower',color:'#F2A79E',g:'f'},
+  {id:'hd_beanie',name:'보라 털모자',en:'Purple Beanie',type:'beanie',color:'#9B8AE3'},
+  {id:'hd_pompom',name:'빨강 방울모자',en:'Red Pom-pom Hat',type:'pompom',color:'#E0523A'},
+  {id:'hd_bear',name:'곰돌이 모자',en:'Teddy Bear Hat',type:'bear',color:'#A8764E'},
+  {id:'hd_earflap',name:'귀덮개 모자',en:'Earflap Hat',type:'earflap',color:'#7C93B8',g:'m'},
+  {id:'hd_dino',name:'공룡 모자',en:'Dino Hat',type:'dino',color:'#7FB36A',g:'m'},
+  {id:'hd_bunny',name:'토끼 모자',en:'Bunny Hat',type:'bunny',color:'#FFFFFF',g:'f'},
+  {id:'hd_cat',name:'고양이 모자',en:'Kitty Hat',type:'cat',color:'#B9B2C9',g:'f'}],
+ fa:[
+  {id:'fa_none',name:'없음',en:'None',def:true},
+  {id:'a_glasses',name:'동그란 안경',en:'Round Glasses',type:'round'},
+  {id:'fa_sq',name:'네모 안경',en:'Square Glasses',type:'square'},
+  {id:'a_hglasses',name:'하트 안경',en:'Heart Glasses',type:'heart',g:'f'},
+  {id:'fa_sun',name:'멋쟁이 선글라스',en:'Cool Sunglasses',type:'sun'},
+  {id:'fa_ribbon',name:'리본 머리띠',en:'Ribbon Headband',type:'ribbon',color:'#F2A79E',g:'f'},
+  {id:'fa_cat',name:'고양이 귀 머리띠',en:'Kitty Ear Headband',type:'catband',color:'#4A3730',g:'f'},
+  {id:'fa_bunny',name:'토끼 귀 머리띠',en:'Bunny Ear Headband',type:'bunnyband',color:'#FFFFFF',g:'f'},
+  {id:'fa_bear',name:'곰돌이 귀 머리띠',en:'Teddy Ear Headband',type:'bearband',color:'#A8764E'},
+  {id:'fa_muff',name:'폭신 귀마개',en:'Fluffy Earmuffs',type:'muff',color:'#F6EBDD'},
+  {id:'fa_phone',name:'민트 헤드폰',en:'Mint Headphones',type:'phone',color:'#A8D8C4'}],
  face:[
-  {id:'f_none',name:'기본 얼굴',def:true},
-  {id:'f_blush',name:'발그레 볼'},
-  {id:'f_wink',name:'윙크'},
-  {id:'f_freckles',name:'주근깨'},
-  {id:'f_hearts',name:'하트 볼'},
-  {id:'f_grin',name:'활짝 웃음'}],
+  {id:'f_none',name:'기본 얼굴',en:'Basic Face',def:true},
+  {id:'f_blush',name:'발그레 볼',en:'Rosy Cheeks'},
+  {id:'f_wink',name:'윙크',en:'Wink'},
+  {id:'f_freckles',name:'주근깨',en:'Freckles'},
+  {id:'f_hearts',name:'하트 볼',en:'Heart Cheeks'},
+  {id:'f_grin',name:'활짝 웃음',en:'Big Smile'}],
  acc:[
-  {id:'a_none',name:'없음',def:true},
-  {id:'a_glasses',name:'동그란 안경'},
-  {id:'a_hglasses',name:'하트 안경'},
-  {id:'a_bag',name:'크로스백'},
-  {id:'a_scarf',name:'목도리'},
-  {id:'a_backpack',name:'책가방'}]
+  {id:'a_none',name:'없음',en:'None',def:true},
+  {id:'a_bag',name:'크로스백',en:'Crossbody Bag'},
+  {id:'a_scarf',name:'목도리',en:'Scarf'},
+  {id:'a_backpack',name:'책가방',en:'Backpack'}],
+ glove:[
+  {id:'gl_none',name:'맨손',en:'Bare Hands',def:true},
+  {id:'gl_red',name:'빨강 벙어리장갑',en:'Red Mittens',type:'mitten',color:'#E0523A',cuff:'#FFFFFF'},
+  {id:'gl_bear',name:'곰발 장갑',en:'Bear Paw Mittens',type:'paw',color:'#A8764E',cuff:'#F1D6B8'},
+  {id:'gl_snow',name:'눈꽃 장갑',en:'Snowflake Gloves',type:'snow',color:'#3F5A8F',cuff:'#FFFFFF'},
+  {id:'gl_blue',name:'파랑 털장갑',en:'Blue Knit Gloves',type:'mitten',color:'#6FA3E0',cuff:'#3F5A8F',g:'m'},
+  {id:'gl_gray',name:'줄무늬 장갑',en:'Striped Gloves',type:'stripe',color:'#9AA0AD',cuff:'#4A5568',g:'m'},
+  {id:'gl_pink',name:'핑크 털장갑',en:'Pink Fluffy Mittens',type:'mitten',color:'#F4B6C6',cuff:'#FFFFFF',g:'f'},
+  {id:'gl_mint',name:'민트 하트장갑',en:'Mint Heart Gloves',type:'heart',color:'#A8D8C4',cuff:'#FFFFFF',g:'f'},
+  {id:'gl_cream',name:'폭신 크림장갑',en:'Fluffy Cream Mittens',type:'mitten',color:'#F3E6D2',cuff:'#E0B7A0',g:'f'}],
+ outer:[
+  {id:'o_none',name:'없음',en:'None',def:true},
+  {id:'o_cream',name:'크림 판초',en:'Cream Poncho',color:'#F1E4CC',trim:'#E8B9A0',pat:'plain'},
+  {id:'o_red',name:'빨강 판초',en:'Red Poncho',color:'#D9524A',trim:'#FFFFFF',pat:'plain'},
+  {id:'o_snow',name:'눈꽃 판초',en:'Snowflake Poncho',color:'#3F5A8F',trim:'#FFFFFF',pat:'snow'},
+  {id:'o_bear',name:'곰돌이 판초',en:'Teddy Poncho',color:'#B98A62',trim:'#F1D6B8',pat:'bear'},
+  {id:'o_plaid',name:'체크 판초',en:'Plaid Poncho',color:'#C4473F',trim:'#2E2E36',pat:'plaid',g:'m'},
+  {id:'o_pink',name:'핑크 방울 판초',en:'Pink Pom-pom Poncho',color:'#F4B6C6',trim:'#FFFFFF',pat:'dots',g:'f'},
+  {id:'o_lav',name:'라벤더 하트 판초',en:'Lavender Heart Poncho',color:'#C9BEF2',trim:'#FFFFFF',pat:'hearts',g:'f'},
+  {id:'o_mint',name:'민트 판초',en:'Mint Poncho',color:'#B7DDC9',trim:'#FFFFFF',pat:'plain',g:'f'}],
+ prop:[
+  {id:'p_none',name:'없음',en:'None',def:true},
+  {id:'x_tree',name:'크리스마스 트리',en:'Christmas Tree',type:'tree',side:1},
+  {id:'x_sled',name:'썰매',en:'Sled',type:'sled',side:1},
+  {id:'x_teddy',name:'산타 곰돌이',en:'Santa Teddy',type:'teddy',side:1},
+  {id:'x_snowman',name:'눈사람',en:'Snowman',type:'snowman',side:1},
+  {id:'x_gift',name:'선물 상자',en:'Gift Boxes',type:'gift',side:1},
+  {id:'x_santa',name:'산타 모자',en:'Santa Hat',type:'santa'},
+  {id:'x_antler',name:'루돌프 뿔',en:'Reindeer Antlers',type:'antler'},
+  {id:'k_helmet_red',name:'빨강 스키 헬멧',en:'Red Ski Helmet',type:'helmet',color:'#E0523A'},
+  {id:'k_helmet_blue',name:'파랑 스키 헬멧',en:'Blue Ski Helmet',type:'helmet',color:'#4F86D6',g:'m'},
+  {id:'k_helmet_pink',name:'핑크 스키 헬멧',en:'Pink Ski Helmet',type:'helmet',color:'#F28CB0',g:'f'},
+  {id:'k_skis',name:'스키와 스틱',en:'Skis and Poles',type:'skis'},
+  {id:'k_board',name:'스노보드',en:'Snowboard',type:'board',side:1},
+  {id:'k_tube',name:'눈썰매 튜브',en:'Snow Tube',type:'tube',side:1}]
 };
-var ITEM_EN={b_basic:'Basic Pants',b_shorts_sky:'Sky Shorts',b_skirt_pink:'Pink Skirt',b_pants_choco:'Chocolate Pants',b_skirt_lav:'Lavender Skirt',b_shorts_mint:'Green Shorts',
- h_default:'My Hair',h_black:'Black Hair',h_caramel:'Caramel Hair',h_honey:'Honey Hair',h_berry:'Berry Hair',h_bun:'Top Bun',
- s_basic:'White Sneakers',s_pink:'Pink Sneakers',s_yellow:'Yellow Sneakers',s_lav:'Purple Sneakers',s_boots:'Chocolate Boots',s_rain:'Sky Rain Boots',
- hd_none:'None',hd_cap:'Orange Cap',hd_bow:'Pink Bow',hd_crown:'Sparkly Crown',hd_flower:'Flower Clip',hd_beanie:'Purple Beanie',
- f_none:'Basic Face',f_blush:'Rosy Cheeks',f_wink:'Wink',f_freckles:'Freckles',f_hearts:'Heart Cheeks',f_grin:'Big Smile',
- a_none:'None',a_glasses:'Round Glasses',a_hglasses:'Heart Glasses',a_bag:'Crossbody Bag',a_scarf:'Scarf',a_backpack:'Backpack'};
-var DEF_OUTFIT={shirt:'starter',bottom:'b_basic',hair:'h_default',shoes:'s_basic',head:'hd_none',face:'f_none',acc:'a_none'};
-var REWARD_ORDER=['shirt','bottom','hair','shoes','acc','head','face'];
-var REWARD_TITLE={shirt:'새 티셔츠',bottom:'새 바지와 치마',hair:'새 머리 모양',shoes:'새 신발',acc:'새 액세서리',head:'새 모자와 리본',face:'새 얼굴 꾸미기'};
-var REWARD_BASE=new Date(2026,9,19);
-function slotItems(slot){if(slot==='shirt')return SHIRTS.map(function(s){return {id:s.id,name:s.name,def:s.id==='starter'};});return ITEMS[slot];}
+var DEF_OUTFIT={shirt:'starter'};
+function slotItems(slot){var L=slot==='shirt'?SHIRTS:ITEMS[slot],g=gk();return L.filter(function(x){return !x.g||x.g===g;});}
+function defId(slot){var L=slotItems(slot);for(var i=0;i<L.length;i++)if(L[i].def)return L[i].id;return L[0].id;}
 function itemOf(slot,id){var L=slotItems(slot);for(var i=0;i<L.length;i++)if(L[i].id===id)return L[i];return L[0];}
 function slotOfItem(id){for(var i=0;i<SLOTS.length;i++){if(slotItems(SLOTS[i]).some(function(x){return x.id===id;}))return SLOTS[i];}return null;}
-function itemName(slot,id){if(slot==='shirt')return shirtName(id);var it=itemOf(slot,id);return isEn()?(ITEM_EN[it.id]||it.name):it.name;}
-function owns(slot,id){var it=itemOf(slot,id);return !!it.def||S.unlocked.indexOf(id)>=0;}
-function outfit(){var o={};SLOTS.forEach(function(k){o[k]=(S.outfit&&S.outfit[k])||DEF_OUTFIT[k];});o.shirt=S.equipped||o.shirt;return o;}
-/* weekly reward for a week (Monday key): rotates through the categories from the week of 2026-10-19 */
+function itemName(slot,id){if(slot==='shirt')return shirtName(id);var it=itemOf(slot,id);return isEn()?(it.en||it.name):it.name;}
+function owns(slot,id){var L=slotItems(slot),it=null;for(var i=0;i<L.length;i++)if(L[i].id===id)it=L[i];return !!it&&(!!it.def||S.unlocked.indexOf(id)>=0);}
+function outfit(){var o={};SLOTS.forEach(function(k){var v=(S.outfit&&S.outfit[k])||'';if(k==='shirt')v=S.equipped||v;if(!slotItems(k).some(function(x){return x.id===v;}))v=defId(k);o[k]=v;});return o;}
+function defOutfit(){var o={};SLOTS.forEach(function(k){o[k]=defId(k);});return o;}
+/* ----- weekly gifts: [slot, optional list of item ids]; several entries = pick one from each ----- */
+var WINTER_SHOES=['s_ugg','s_ugg_pink','s_ugg_gray','s_fur','s_snow','s_boots','s_rain','s_hitop','s_mary','s_ballet'];
+var SCHEDULE={
+ '2026-10-19':{c:[['shirt',['mint','star','heart','dots','cross']]],title:'새 티셔츠',en:'New Tees'},
+ '2026-10-26':{c:[['bottom',['b_shorts_sky','b_shorts_mint','b_shorts_denim','b_pants_choco','b_skirt_pink','b_skirt_lav','b_skirt_plaid','b_skirt_mint']]],title:'새 바지와 치마',titleM:'새 바지',en:'New Pants and Skirts',enM:'New Pants'},
+ '2026-11-2':{c:[['shoes',WINTER_SHOES]],title:'따뜻한 겨울 신발',en:'Cozy Winter Shoes'},
+ '2026-11-9':{c:[['fa']],title:'안경과 머리띠',en:'Glasses and Headbands'},
+ '2026-11-16':{c:[['shirt',['sw_snow','sw_stripe','sw_bear','sw_turtle','sw_hoodie','sw_argyle','sw_heart','sw_cardi','sw_mint']]],title:'포근한 스웨터',en:'Cozy Sweaters'},
+ '2026-11-23':{c:[['bottom',['p_jeans','p_cargo','p_jogger','p_cord','p_navy','p_wide','p_flare','p_legging','p_pinkjog']]],title:'새 긴바지',en:'New Long Pants'},
+ '2026-11-30':{c:[['hair']],title:'새 머리 모양',en:'New Hairstyles'},
+ '2026-12-7':{c:[['glove'],['head',['hd_beanie','hd_pompom','hd_bear','hd_earflap','hd_dino','hd_bunny','hd_cat']]],title:'장갑과 모자',en:'Gloves and Hats'},
+ '2026-12-14':{c:[['outer']],title:'귀여운 판초',en:'Cute Ponchos'},
+ '2026-12-21':{c:[['prop',['x_tree','x_sled','x_teddy','x_snowman','x_gift','x_santa','x_antler']]],title:'크리스마스 선물',en:'Christmas Gifts'},
+ '2026-12-28':{c:[['prop',['k_helmet_red','k_helmet_blue','k_helmet_pink','k_skis','k_board','k_tube']]],title:'스키 놀이',en:'Ski Fun'}
+};
+var REWARD_ORDER=['acc','head','face','hair','shoes','fa','shirt','bottom','outer','glove','prop'];
+var REWARD_TITLE={shirt:'새 티셔츠',outer:'새 판초',bottom:'새 바지와 치마',hair:'새 머리 모양',shoes:'새 신발',glove:'새 장갑',acc:'새 액세서리',head:'새 모자와 리본',fa:'안경과 머리띠',face:'새 얼굴 꾸미기',prop:'새 소품'};
+var REWARD_TITLE_EN={shirt:'New Tops',outer:'New Ponchos',bottom:'New Pants and Skirts',hair:'New Hairstyles',shoes:'New Shoes',glove:'New Gloves',acc:'New Accessories',head:'New Hats and Ribbons',fa:'Glasses and Headbands',face:'New Faces',prop:'New Props'};
+var REWARD_BASE=new Date(2026,9,19);
+function rTitle(r){return isEn()?r.en:r.title;}
+/* the gift for a week (Monday key): {category, cats:[{slot,items}], items (all), title, en} */
 function reward(wk){
- var p=(wk||week().wk).split('-'),mon=new Date(+p[0],+p[1]-1,+p[2]);
- var n=Math.round((mon-REWARD_BASE)/(7*864e5)),slot=REWARD_ORDER[((n%REWARD_ORDER.length)+REWARD_ORDER.length)%REWARD_ORDER.length];
- return {category:slot,title:REWARD_TITLE[slot],items:slotItems(slot).filter(function(x){return !x.def;}).map(function(x){return x.id;})};
+ var key=wk||week().wk,p=key.split('-'),mon=new Date(+p[0],+p[1]-1,+p[2]),k=mon.getFullYear()+'-'+(mon.getMonth()+1)+'-'+mon.getDate();
+ var sc=SCHEDULE[k],cs,title,en;
+ if(sc){cs=sc.c;title=(S.gender!=='girl'&&sc.titleM)||sc.title;en=(S.gender!=='girl'&&sc.enM)||sc.en;}
+ else{var n=Math.round((mon-REWARD_BASE)/(7*864e5)),sl=REWARD_ORDER[((n%REWARD_ORDER.length)+REWARD_ORDER.length)%REWARD_ORDER.length];cs=[[sl]];title=REWARD_TITLE[sl];en=REWARD_TITLE_EN[sl];}
+ var cats=[],all=[];
+ cs.forEach(function(c){var ids=slotItems(c[0]).filter(function(x){return !x.def&&(!c[1]||c[1].indexOf(x.id)>=0);}).map(function(x){return x.id;});if(ids.length){cats.push({slot:c[0],items:ids});all=all.concat(ids);}});
+ return {category:cats.length?cats[0].slot:cs[0][0],cats:cats,items:all,title:title,en:en};
 }
-function rewardWeekOf(id){/* first upcoming week (from this week) whose reward includes the item */
- var W=week(),m=new Date(W.days[0].date);for(var i=0;i<REWARD_ORDER.length;i++){var r=reward(dkey(m));if(r.items.indexOf(id)>=0)return {i:i,date:new Date(m)};m.setDate(m.getDate()+7);}return null;}
+function rewardWeekOf(id){/* first upcoming week (from this week) whose gift includes the item */
+ var W=week(),m=new Date(W.days[0].date);for(var i=0;i<16;i++){var r=reward(dkey(m));if(r.items.indexOf(id)>=0)return {i:i,date:new Date(m)};m.setDate(m.getDate()+7);}return null;}
 
 function recolor(str,from,to){return to&&from?str.split(from).join(to):str;}
 var HAIR_BASE={boy:['#5A3A2E','#2E2420','#7A4A2A'],girl:['#5A3A2E','#3A2620','#8A5A3A']};
+function eyeOpen(cx){return '<ellipse cx="'+cx+'" cy="27.6" rx="1.9" ry="2.3" fill="#3A2620"/><circle cx="'+(cx-.6)+'" cy="26.7" r=".85" fill="#fff"/><circle cx="'+(cx+.7)+'" cy="28.5" r=".4" fill="#fff"/>';}
+/* hair styles: extra hair behind the head (b) and on top of it (t) */
+function hairStyle(st,c){
+ var b='',t='';
+ if(st==='bun')t='<circle cx="24" cy="13.6" r="4.2" fill="'+c+'"/>';
+ else if(st==='buns')t='<circle cx="13.5" cy="15.5" r="4.3" fill="'+c+'"/><circle cx="34.5" cy="15.5" r="4.3" fill="'+c+'"/><circle cx="14.6" cy="19.4" r="1.4" fill="#F2A79E"/><circle cx="33.4" cy="19.4" r="1.4" fill="#F2A79E"/>';
+ else if(st==='pig'){b='<path d="M12.5 24q-6 2-6.5 12q-.4 5 2.6 6.2q3.2 1 4.2-3q1.2-6 1.4-12z" fill="'+c+'"/><path d="M35.5 24q6 2 6.5 12q.4 5-2.6 6.2q-3.2 1-4.2-3q-1.2-6-1.4-12z" fill="'+c+'"/>';t='<path d="M12.4 22.6l-4-1.6v4.2zM12.4 22.6l2.6-3.6v5z" fill="#E8628F"/><path d="M35.6 22.6l4-1.6v4.2zM35.6 22.6l-2.6-3.6v5z" fill="#E8628F"/><circle cx="12.4" cy="22.6" r="1.3" fill="#C2456F"/><circle cx="35.6" cy="22.6" r="1.3" fill="#C2456F"/>';}
+ else if(st==='pony'){b='<path d="M34 20q10 0 9.5 12q-.5 8-4.5 10q-3 1-2.6-3q.6-6 .4-9q-.6-5-2.8-10z" fill="'+c+'"/>';t='<circle cx="34.2" cy="20.4" r="1.8" fill="#E8628F"/><path d="M34.2 20.4l-3.6-2.4v4.8zM34.2 20.4l3.6-2.4v4.8z" fill="#E8628F"/>';}
+ else if(st==='long')b='<path d="M10 25a14 14 0 0 1 28 0v17q-4 3-7 0q-3 2.5-7 0q-3 2.5-7 0q-3 2.5-7 0z" fill="'+c+'"/>';
+ else if(st==='spiky')t='<path d="M12.6 23.6L12 13.4l5.6 4.2L19 8l4.6 7.4L29 8.6l.8 8.4 5.4-3.4-.6 10z" fill="'+c+'"/>';
+ else if(st==='curly')t='<g fill="'+c+'"><circle cx="14" cy="19.5" r="3.9"/><circle cx="18" cy="14.8" r="4.3"/><circle cx="24" cy="12.6" r="4.6"/><circle cx="30" cy="14.8" r="4.3"/><circle cx="34" cy="19.5" r="3.9"/><circle cx="24" cy="17.2" r="4"/></g>';
+ else if(st==='quiff')t='<path d="M12.8 24.5q-1-11 10-12.6q11-1 12.4 6.4q.6 3.4-.4 6.2q-4-5-10-5.4q-7 .2-12 5.4z" fill="'+c+'"/><circle cx="20" cy="12.6" r="4.3" fill="'+c+'"/>';
+ return {b:b,t:t};
+}
 /* head parts in the 48×48 portrait coordinates (head centre 24,26 r11) */
 function headParts(av,o,gender,idx){
- var base=(HAIR_BASE[gender]||HAIR_BASE.boy)[(idx||1)-1],hi=itemOf('hair',o.hair),hc=hi.color;
+ var base=(HAIR_BASE[gender]||HAIR_BASE.boy)[(idx||1)-1],hi=itemOf('hair',o.hair),hc=hi.color,girl=gender==='girl';
  var back=recolor(av.back,base,hc),front=recolor(av.front,base,hc),hairCol=hc||base;
  var f=itemOf('face',o.face).id;
- var eo=function(cx){return '<ellipse cx="'+cx+'" cy="27.6" rx="1.9" ry="2.3" fill="#3A2620"/><circle cx="'+(cx-.6)+'" cy="26.7" r=".85" fill="#fff"/><circle cx="'+(cx+.7)+'" cy="28.5" r=".4" fill="#fff"/>';};
- var eyes=f==='f_wink'?'<path d="M18.2 27.8q1.8-2 3.6 0" fill="none" stroke="#3A2620" stroke-width="1.3" stroke-linecap="round"/>'+eo(28.2):eo(19.8)+eo(28.2);
+ var eyes=f==='f_wink'?'<path d="M18.2 27.8q1.8-2 3.6 0" fill="none" stroke="#3A2620" stroke-width="1.3" stroke-linecap="round"/>'+eyeOpen(28.2):eyeOpen(19.8)+eyeOpen(28.2);
+ /* girls get little lashes, boys get eyebrows */
+ var lash=girl?'<path d="M17.6 26l-1.7-.9M18.1 25l-.8-1.6M30.4 26l1.7-.9M29.9 25l.8-1.6" fill="none" stroke="#3A2620" stroke-width=".9" stroke-linecap="round"/>':'<path d="M17.6 23.4q2.2-1.1 4.4 0M26 23.4q2.2-1.1 4.4 0" fill="none" stroke="#5A3A2E" stroke-width="1.1" stroke-linecap="round"/>';
  var cheeks=f==='f_blush'?'<ellipse cx="17" cy="31" rx="2.8" ry="2" fill="#F28C9A" opacity=".85"/><ellipse cx="31" cy="31" rx="2.8" ry="2" fill="#F28C9A" opacity=".85"/>':
   f==='f_hearts'?'<path d="M17.5 32.6s-2-1.2-2-2.5a1 1 0 0 1 2-.5 1 1 0 0 1 2 .5c0 1.3-2 2.5-2 2.5z" fill="#E8628F"/><path d="M30.5 32.6s-2-1.2-2-2.5a1 1 0 0 1 2-.5 1 1 0 0 1 2 .5c0 1.3-2 2.5-2 2.5z" fill="#E8628F"/>':
   '<ellipse cx="16.6" cy="31.6" rx="2.7" ry="1.8" fill="#F7A39A" opacity=".8"/><ellipse cx="31.4" cy="31.6" rx="2.7" ry="1.8" fill="#F7A39A" opacity=".8"/>'+(f==='f_freckles'?'<g fill="#C98A6A"><circle cx="16.6" cy="30" r=".45"/><circle cx="18" cy="31.4" r=".45"/><circle cx="16.9" cy="32" r=".45"/><circle cx="31.4" cy="30" r=".45"/><circle cx="30" cy="31.4" r=".45"/><circle cx="31.1" cy="32" r=".45"/></g>':'');
  var mouth=f==='f_grin'?'<path d="M20.8 31h6.4a3.2 3.2 0 0 1-6.4 0z" fill="#5A2E22"/>':'<path d="M22.2 31.6q1.8 1.9 3.6 0" fill="none" stroke="#B5523F" stroke-width="1.3" stroke-linecap="round"/>';
- var top='';
- if(hi.style==='bun')top+='<circle cx="24" cy="13.6" r="4.2" fill="'+hairCol+'"/>';
- var h=itemOf('head',o.head);
- if(h.type==='cap')top+='<path d="M12.6 22.5a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><path d="M29 21h9.5a1.8 1.8 0 0 1 0 3.6H29z" fill="'+h.color+'"/><circle cx="24" cy="11.6" r="1.4" fill="'+h.color+'"/><path d="M24 14.2l.7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z" fill="#fff" opacity=".9"/>';
- else if(h.type==='beanie')top+='<path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><rect x="12" y="20.6" width="24" height="4" rx="2" fill="#C9BEF2"/><circle cx="24" cy="10.6" r="3.2" fill="#C9BEF2"/><path d="M17.5 20.6l1.6-6M24 20.6v-8.4M30.5 20.6l-1.6-6" stroke="#fff" stroke-opacity=".35" stroke-width="1.5" stroke-linecap="round"/>';
- else if(h.type==='bow')top+='<path d="M31.5 16 25 11.6v8.8zM31.5 16l6.5-4.4v8.8z" fill="'+h.color+'"/><circle cx="28" cy="14.6" r=".8" fill="#fff" opacity=".8"/><circle cx="35" cy="14.6" r=".8" fill="#fff" opacity=".8"/><circle cx="31.5" cy="16" r="2" fill="#C2456F"/>';
- else if(h.type==='crown')top+='<path d="M17 17.5l1.2-6 3.4 3.4L24 9.6l2.4 5.3 3.4-3.4 1.2 6z" fill="'+h.color+'" stroke="#E0A82E" stroke-width=".6" stroke-linejoin="round"/><circle cx="24" cy="14.8" r=".9" fill="#E8628F"/>';
- else if(h.type==='flower')top+='<g fill="'+h.color+'"><circle cx="32.5" cy="14.6" r="1.7"/><circle cx="34.6" cy="16.2" r="1.7"/><circle cx="33.8" cy="18.6" r="1.7"/><circle cx="31.2" cy="18.6" r="1.7"/><circle cx="30.4" cy="16.2" r="1.7"/></g><circle cx="32.5" cy="16.9" r="1.1" fill="#F8C548"/>';
- var a=itemOf('acc',o.acc).id,gl='';
- if(a==='a_glasses')gl='<g fill="#fff" fill-opacity=".25" stroke="#7A5C4E" stroke-width="1.1"><circle cx="19.8" cy="27.6" r="3.7"/><circle cx="28.2" cy="27.6" r="3.7"/><path d="M23.1 27.3q.9-.7 1.8 0M16.9 27l-2.2-.8M31.1 27l2.2-.8"/></g>';
- if(a==='a_hglasses')gl='<g fill="#E8628F" opacity=".9"><path d="M20 31s-3.6-2.1-3.6-4.4a1.8 1.8 0 0 1 3.6-.8 1.8 1.8 0 0 1 3.6.8c0 2.3-3.6 4.4-3.6 4.4z"/><path d="M28 31s-3.6-2.1-3.6-4.4a1.8 1.8 0 0 1 3.6-.8 1.8 1.8 0 0 1 3.6.8c0 2.3-3.6 4.4-3.6 4.4z"/></g><path d="M23.5 26.6h1" stroke="#C2456F" stroke-width=".9"/>';
- return {back:back,head:'<circle cx="24" cy="26" r="11" fill="'+av.skin+'"/>'+front+eyes+cheeks+mouth+gl+top};
+ var hs=hairStyle(hi.style,hairCol),top=hs.t;back+=hs.b;
+ /* glasses and headbands (face-accessory slot) */
+ var fa=itemOf('fa',o.fa),gl='',fb='';
+ if(fa.type==='round')gl='<g fill="#fff" fill-opacity=".25" stroke="#7A5C4E" stroke-width="1.1"><circle cx="19.8" cy="27.6" r="3.7"/><circle cx="28.2" cy="27.6" r="3.7"/></g><path d="M23.5 27q.5-.6 1 0M16.1 27l-2.4-.8M31.9 27l2.4-.8" fill="none" stroke="#7A5C4E" stroke-width="1"/>';
+ else if(fa.type==='square')gl='<g fill="#fff" fill-opacity=".25" stroke="#3F5A8F" stroke-width="1.2"><rect x="15.6" y="24.2" width="8.4" height="6.8" rx="2"/><rect x="24" y="24.2" width="8.4" height="6.8" rx="2"/></g><path d="M23.6 26.6h.8M15.6 25.6l-2.4-.6M32.4 25.6l2.4-.6" fill="none" stroke="#3F5A8F" stroke-width="1.1"/>';
+ else if(fa.type==='sun')gl='<g fill="#2E2E36" stroke="#2E2E36" stroke-width="1"><rect x="15.4" y="24.4" width="8.8" height="6.4" rx="3"/><rect x="23.8" y="24.4" width="8.8" height="6.4" rx="3"/></g><path d="M17.4 26l2 .1M25.8 26l2 .1" stroke="#fff" stroke-opacity=".7" stroke-width=".9" stroke-linecap="round"/><path d="M24 26.4h-.2M15.4 25.4l-2.4-.6M32.6 25.4l2.4-.6" stroke="#2E2E36" stroke-width="1.1"/>';
+ else if(fa.type==='heart')gl='<g fill="#E8628F" opacity=".9"><path d="M19.8 31.2s-3.8-2.2-3.8-4.6a1.9 1.9 0 0 1 3.8-.8 1.9 1.9 0 0 1 3.8.8c0 2.4-3.8 4.6-3.8 4.6z"/><path d="M28.2 31.2s-3.8-2.2-3.8-4.6a1.9 1.9 0 0 1 3.8-.8 1.9 1.9 0 0 1 3.8.8c0 2.4-3.8 4.6-3.8 4.6z"/></g><path d="M23.5 26.6h1" stroke="#C2456F" stroke-width=".9"/>';
+ else if(fa.type==='ribbon')fb='<path d="M13.2 22Q24 9.5 34.8 22" fill="none" stroke="'+fa.color+'" stroke-width="2.6" stroke-linecap="round"/><path d="M31.6 14.6l-5.2-3.2v6.6zM31.6 14.6l5-3.2v6.6z" fill="'+shade(fa.color,-.12)+'"/><circle cx="31.6" cy="14.6" r="1.7" fill="#E8628F"/>';
+ else if(fa.type==='catband')fb='<path d="M13 23Q24 10 35 23" fill="none" stroke="'+fa.color+'" stroke-width="2.2" stroke-linecap="round"/><path d="M14.4 17.8l-.6-8 5.8 4zM33.6 17.8l.6-8-5.8 4z" fill="'+fa.color+'"/><path d="M15.2 15.6l-.2-3.4 2.4 1.8zM32.8 15.6l.2-3.4-2.4 1.8z" fill="#F4B6C6"/>';
+ else if(fa.type==='bunnyband')fb='<path d="M13 23Q24 10 35 23" fill="none" stroke="#F4B6C6" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="17.4" cy="9.6" rx="2.8" ry="7.4" fill="#FFFFFF" stroke="#E7DDE0" stroke-width=".7" transform="rotate(-8 17.4 9.6)"/><ellipse cx="30.6" cy="9.6" rx="2.8" ry="7.4" fill="#FFFFFF" stroke="#E7DDE0" stroke-width=".7" transform="rotate(8 30.6 9.6)"/><ellipse cx="17.4" cy="10.4" rx="1.3" ry="5" fill="#F4B6C6" transform="rotate(-8 17.4 10.4)"/><ellipse cx="30.6" cy="10.4" rx="1.3" ry="5" fill="#F4B6C6" transform="rotate(8 30.6 10.4)"/>';
+ else if(fa.type==='bearband')fb='<path d="M13 23Q24 10 35 23" fill="none" stroke="'+fa.color+'" stroke-width="2.2" stroke-linecap="round"/><circle cx="15.4" cy="15.6" r="3.6" fill="'+fa.color+'"/><circle cx="32.6" cy="15.6" r="3.6" fill="'+fa.color+'"/><circle cx="15.4" cy="15.8" r="1.8" fill="#F1D6B8"/><circle cx="32.6" cy="15.8" r="1.8" fill="#F1D6B8"/>';
+ else if(fa.type==='muff')fb='<path d="M12.6 27Q24 4 35.4 27" fill="none" stroke="#6B5B66" stroke-width="2" stroke-linecap="round"/><g fill="'+fa.color+'" stroke="#E4D3C0" stroke-width=".7"><circle cx="12.4" cy="27.6" r="4.6"/><circle cx="35.6" cy="27.6" r="4.6"/></g><g fill="#fff" opacity=".8"><circle cx="11" cy="26.4" r="1.2"/><circle cx="13.6" cy="29" r="1.2"/><circle cx="37" cy="26.4" r="1.2"/><circle cx="34.4" cy="29" r="1.2"/></g>';
+ else if(fa.type==='phone')fb='<path d="M12.4 27Q24 5 35.6 27" fill="none" stroke="'+fa.color+'" stroke-width="2.4" stroke-linecap="round"/><g fill="'+fa.color+'" stroke="'+shade(fa.color,-.18)+'" stroke-width=".9"><rect x="8.8" y="23.4" width="6.2" height="9" rx="3.1"/><rect x="33" y="23.4" width="6.2" height="9" rx="3.1"/></g><g fill="#fff" opacity=".6"><rect x="10.2" y="25.2" width="3.4" height="5.4" rx="1.7"/><rect x="34.4" y="25.2" width="3.4" height="5.4" rx="1.7"/></g>';
+ /* hats */
+ var h=itemOf('head',o.head),hat='';
+ if(h.type==='cap')hat='<path d="M12.6 22.5a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><path d="M29 21h9.5a1.8 1.8 0 0 1 0 3.6H29z" fill="'+h.color+'"/><circle cx="24" cy="11.6" r="1.4" fill="'+h.color+'"/><path d="M24 14.2l.7 1.5 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2z" fill="#fff" opacity=".9"/>';
+ else if(h.type==='beanie')hat='<path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><rect x="12" y="20.6" width="24" height="4" rx="2" fill="#C9BEF2"/><circle cx="24" cy="10.6" r="3.2" fill="#C9BEF2"/><path d="M17.5 20.6l1.6-6M24 20.6v-8.4M30.5 20.6l-1.6-6" stroke="#fff" stroke-opacity=".35" stroke-width="1.5" stroke-linecap="round"/>';
+ else if(h.type==='bow')hat='<path d="M31.5 16 25 11.6v8.8zM31.5 16l6.5-4.4v8.8z" fill="'+h.color+'"/><circle cx="28" cy="14.6" r=".8" fill="#fff" opacity=".8"/><circle cx="35" cy="14.6" r=".8" fill="#fff" opacity=".8"/><circle cx="31.5" cy="16" r="2" fill="#C2456F"/>';
+ else if(h.type==='crown')hat='<path d="M17 17.5l1.2-6 3.4 3.4L24 9.6l2.4 5.3 3.4-3.4 1.2 6z" fill="'+h.color+'" stroke="#E0A82E" stroke-width=".6" stroke-linejoin="round"/><circle cx="24" cy="14.8" r=".9" fill="#E8628F"/>';
+ else if(h.type==='flower')hat='<g fill="'+h.color+'"><circle cx="32.5" cy="14.6" r="1.7"/><circle cx="34.6" cy="16.2" r="1.7"/><circle cx="33.8" cy="18.6" r="1.7"/><circle cx="31.2" cy="18.6" r="1.7"/><circle cx="30.4" cy="16.2" r="1.7"/></g><circle cx="32.5" cy="16.9" r="1.1" fill="#F8C548"/>';
+ else if(h.type==='pompom')hat='<path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><path d="M16 21.4l1.4-6M21 20.4l.8-8M27 20.4l-.8-8M32 21.4l-1.4-6" stroke="#fff" stroke-opacity=".28" stroke-width="1.6" stroke-linecap="round"/><rect x="11.6" y="20.6" width="24.8" height="4.6" rx="2.3" fill="#FFFFFF"/><circle cx="24" cy="10.2" r="3.9" fill="#FFFFFF"/>';
+ else if(h.type==='bear')hat='<circle cx="14" cy="15" r="3.9" fill="'+h.color+'"/><circle cx="34" cy="15" r="3.9" fill="'+h.color+'"/><circle cx="14" cy="15.3" r="2" fill="#F1D6B8"/><circle cx="34" cy="15.3" r="2" fill="#F1D6B8"/><path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><rect x="12" y="20.8" width="24" height="4" rx="2" fill="'+shade(h.color,.3)+'"/>';
+ else if(h.type==='earflap')hat='<path d="M12.2 22.6q-2 9 .6 13.6q3 1.4 4-1.6v-12z" fill="'+h.color+'"/><path d="M35.8 22.6q2 9-.6 13.6q-3 1.4-4-1.6v-12z" fill="'+h.color+'"/><path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+shade(h.color,-.1)+'"/><rect x="12" y="20.8" width="24" height="3.6" rx="1.8" fill="#FFFFFF" opacity=".85"/><path d="M13.6 36.4l-.4 3.4M34.4 36.4l.4 3.4" stroke="#E0523A" stroke-width="1.6" stroke-linecap="round"/><circle cx="24" cy="11.4" r="2.2" fill="#FFFFFF"/>';
+ else if(h.type==='dino')hat='<path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><path d="M19.4 12.4l2-4.6 2.6 4.4 2.6-4.4 2 4.6z" fill="#F29A4A"/><circle cx="17.6" cy="15.6" r="2.6" fill="#FFFFFF"/><circle cx="30.4" cy="15.6" r="2.6" fill="#FFFFFF"/><circle cx="17.8" cy="15.8" r="1.2" fill="#3A2620"/><circle cx="30.2" cy="15.8" r="1.2" fill="#3A2620"/><path d="M13.4 22.2l2 2.6 2-2.6 2 2.6 2-2.6M24.6 22.2l2 2.6 2-2.6 2 2.6 2-2.6" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>';
+ else if(h.type==='bunny')hat='<ellipse cx="17.6" cy="8.6" rx="2.9" ry="7.6" fill="#FFFFFF" stroke="#E7DDE0" stroke-width=".7" transform="rotate(-10 17.6 8.6)"/><ellipse cx="30.4" cy="8.6" rx="2.9" ry="7.6" fill="#FFFFFF" stroke="#E7DDE0" stroke-width=".7" transform="rotate(10 30.4 8.6)"/><ellipse cx="17.6" cy="9.4" rx="1.3" ry="5.2" fill="#F4B6C6" transform="rotate(-10 17.6 9.4)"/><ellipse cx="30.4" cy="9.4" rx="1.3" ry="5.2" fill="#F4B6C6" transform="rotate(10 30.4 9.4)"/><path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="#FFFFFF" stroke="#E7DDE0" stroke-width=".7"/><circle cx="24" cy="12.6" r="0" fill="none"/>';
+ else if(h.type==='cat')hat='<path d="M13.4 18.4L12.8 7.6l7 5.4zM34.6 18.4l.6-10.8-7 5.4z" fill="'+h.color+'"/><path d="M14.6 15.6l-.2-4.4 3.2 2.4zM33.4 15.6l.2-4.4-3.2 2.4z" fill="#F4B6C6"/><path d="M12.6 23a11.4 11.4 0 0 1 22.8 0z" fill="'+h.color+'"/><path d="M20 16.5l.6 4M24 15.6v5M28 16.5l-.6 4" stroke="#fff" stroke-opacity=".4" stroke-width="1.3" stroke-linecap="round"/>';
+ /* props worn on the head */
+ var pr=itemOf('prop',o.prop),ph='';
+ if(pr.type==='santa')ph='<path d="M13 21.6Q24 4.4 40 10.6Q31 12.6 35.6 21.6Z" fill="#D9423A"/><rect x="11.6" y="19.6" width="25" height="4.8" rx="2.4" fill="#FFFFFF"/><circle cx="40.6" cy="10.4" r="3.2" fill="#FFFFFF"/>';
+ else if(pr.type==='antler')ph='<g fill="none" stroke="#8A5A3A" stroke-width="1.9" stroke-linecap="round"><path d="M16.6 15Q13 8.6 14.6 3.6M15 9Q12 7.4 10.4 8"/><path d="M31.4 15Q35 8.6 33.4 3.6M33 9Q36 7.4 37.6 8"/></g><circle cx="24" cy="29.7" r="1.7" fill="#E0523A"/><circle cx="23.5" cy="29.2" r=".5" fill="#fff"/>';
+ else if(pr.type==='helmet'){var hc2=pr.color;ph='<circle cx="12.2" cy="28" r="3.4" fill="'+shade(hc2,-.18)+'"/><circle cx="35.8" cy="28" r="3.4" fill="'+shade(hc2,-.18)+'"/><path d="M11.8 25.4a12.2 12.2 0 0 1 24.4 0z" fill="'+hc2+'"/><path d="M24 13.2v12.2" stroke="#fff" stroke-opacity=".55" stroke-width="2.2"/><rect x="11.8" y="19" width="24.4" height="4.2" rx="2.1" fill="#34456A"/><rect x="16.6" y="16.8" width="14.8" height="7.6" rx="3.8" fill="#8FDCF0" stroke="#FFFFFF" stroke-width=".9"/><path d="M19 19.2l3 .2" stroke="#fff" stroke-width="1" stroke-linecap="round"/>';}
+ return {back:back,head:'<circle cx="24" cy="26" r="11" fill="'+av.skin+'"/>'+front+eyes+lash+cheeks+mouth+gl+fb+top+hat+ph};
 }
-/* full-body character, viewBox 0 0 120 200 (head drawn from the same portrait parts, scaled) */
+
+/* ----- bottoms (pants shapes for both, skirts for girls only) ----- */
+function bottomSvg(bt){
+ var c=bt.color,d=shade(c,-.16),l=shade(c,.3),sh=bt.shape||'',s='',leg;
+ if(bt.type==='skirt'){
+  if(sh==='tutu')return '<path d="M44 116h32l4 9H40z" fill="'+d+'"/><ellipse cx="60" cy="139" rx="38" ry="11" fill="'+c+'"/><ellipse cx="60" cy="134" rx="32" ry="9.4" fill="'+l+'"/><ellipse cx="60" cy="129" rx="25" ry="7.6" fill="'+shade(c,.55)+'"/><g fill="#FFFFFF" opacity=".7"><circle cx="40" cy="138" r="1.2"/><circle cx="52" cy="144" r="1.2"/><circle cx="68" cy="145" r="1.2"/><circle cx="80" cy="138" r="1.2"/></g>';
+  if(sh==='tier')return '<path d="M34 134h52l6 13q-32 8-64 0z" fill="'+shade(c,.12)+'"/><path d="M37 125h46l5 11q-28 6-56 0z" fill="'+l+'"/><path d="M41 116h38l4 11q-23 5-46 0z" fill="'+c+'"/><path d="M36 143q6 2 12 0t12 0t12 0t12 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.4" stroke-linecap="round"/>';
+  s='<path d="M39 116h42l10 30q-31 7-62 0z" fill="'+c+'"/>';
+  if(sh==='pleat')s+='<path d="M47 118l-6 28M54 118l-3 29M60 118v30M66 118l3 29M73 118l6 28" stroke="'+d+'" stroke-width="1.3" opacity=".7"/><path d="M33 141q27 6 54 0" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".6"/>';
+  else if(sh==='plaid')s+='<g stroke="'+shade(c,-.35)+'" stroke-width="1.5" opacity=".75"><path d="M46 118v26M53 118v28M60 118v29M67 118v28M74 118v26M41 126h38M38 134h44M35 142h50"/></g><g stroke="#FFFFFF" stroke-width=".9" opacity=".65"><path d="M49.5 118v27M63.5 118v28M70.5 118v27M39.5 130h41M36.5 138h47"/></g><path d="M33 141q27 6 54 0" fill="none" stroke="#fff" stroke-width="1.3" opacity=".6"/>';
+  else s+='<path d="M33 141q27 6 54 0" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".6"/><circle cx="48" cy="130" r="1.3" fill="#fff" opacity=".7"/><circle cx="60" cy="134" r="1.3" fill="#fff" opacity=".7"/><circle cx="72" cy="130" r="1.3" fill="#fff" opacity=".7"/>';
+  return s;
+ }
+ s='<path d="M37 118h46l2 14H35z" fill="'+c+'"/>';
+ if(bt.type==='shorts'){
+  s+='<rect x="43" y="124" width="16" height="20" rx="6" fill="'+c+'"/><rect x="61" y="124" width="16" height="20" rx="6" fill="'+c+'"/><path d="M43.5 141.4h15M61.5 141.4h15" stroke="'+d+'" stroke-width="1.6" stroke-linecap="round"/>';
+  if(sh==='cargo')s+='<rect x="44" y="130" width="6.2" height="7.4" rx="1.4" fill="'+d+'"/><rect x="69.8" y="130" width="6.2" height="7.4" rx="1.4" fill="'+d+'"/>';
+  return s;
+ }
+ /* long pants: left leg, mirrored for the right */
+ if(sh==='wide')leg='<path d="M38 123H59.5V167H31z" fill="'+c+'"/><path d="M48 128v36" stroke="'+d+'" stroke-width="1.2" opacity=".5"/>';
+ else if(sh==='flare')leg='<path d="M43.5 123H59V168H32.5q7-22 11-45z" fill="'+c+'"/><path d="M45 128q1 14-4 34" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 2"/>';
+ else if(sh==='legging')leg='<rect x="46" y="123" width="12" height="44" rx="5.6" fill="'+c+'"/><path d="M49 128v34" stroke="#fff" stroke-opacity=".3" stroke-width="1.4" stroke-linecap="round"/>';
+ else if(sh==='jogger')leg='<rect x="43.5" y="123" width="15.5" height="40" rx="6" fill="'+c+'"/><rect x="42.6" y="156" width="17.4" height="9" rx="4.4" fill="'+d+'"/><path d="M46 126v28" stroke="#fff" stroke-opacity=".35" stroke-width="1.4" stroke-linecap="round"/>';
+ else if(sh==='cargo')leg='<rect x="43.5" y="123" width="15.5" height="43" rx="6" fill="'+c+'"/><rect x="43.6" y="136" width="7" height="10" rx="1.6" fill="'+d+'"/><path d="M44.6 139h5" stroke="'+l+'" stroke-width="1.1"/><circle cx="47.1" cy="143" r=".9" fill="'+l+'"/><path d="M43.6 158h15.4" stroke="'+d+'" stroke-width="1.6"/>';
+ else if(sh==='cord')leg='<rect x="43.5" y="123" width="15.5" height="43" rx="6" fill="'+c+'"/><path d="M47 126v38M51 126v38M55 126v38" stroke="'+d+'" stroke-width="1.1" opacity=".7"/>';
+ else if(sh==='jean')leg='<rect x="43.5" y="123" width="15.5" height="43" rx="6" fill="'+c+'"/><path d="M45.4 128v34" stroke="#fff" stroke-opacity=".4" stroke-width="1.1" stroke-dasharray="2 2"/><path d="M43.6 160h15.4" stroke="'+l+'" stroke-width="1.6"/>';
+ else leg='<rect x="43.5" y="123" width="15.5" height="43" rx="6" fill="'+c+'"/>';
+ s+=leg+mir(leg);
+ s+='<path d="M37.5 121.4h45" stroke="'+d+'" stroke-width="1.6"/>';
+ if(sh==='jean'||sh==='flare')s+='<path d="M40 124q4 5 9 3M80 124q-4 5-9 3" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.1"/>';
+ return s;
+}
+/* ----- shoes: left shoe drawn, right one mirrored ----- */
+function shoeSvg(sh){
+ var c=sh.color,ty=sh.type,sole=c==='#FFFFFF'?'#CBBFB3':'rgba(58,38,32,.28)',L;
+ if(ty==='boots')L='<rect x="43.5" y="150" width="15" height="22" rx="5" fill="'+c+'"/><path d="M41 168h20v6a2 2 0 0 1-2 2H43a2 2 0 0 1-2-2z" fill="'+c+'"/><path d="M41 173.5h20" stroke="'+sole+'" stroke-width="2.6" stroke-linecap="round"/>';
+ else if(ty==='ugg'){var cf=sh.cuff||shade(c,.55);L='<path d="M43.5 151h15.5v14q6 1.6 6 8.6q0 2.4-2.4 2.4H41.6q-2.4 0-2.4-2.4q0-6 4.3-8.2z" fill="'+c+'"/><rect x="38.4" y="172" width="27.2" height="4.4" rx="2.2" fill="#F3E3C6"/><path d="M45 160q2 6 8 7.4" stroke="'+shade(c,-.22)+'" stroke-width="1" fill="none" stroke-linecap="round" stroke-dasharray="1.6 1.6"/><g fill="'+cf+'"><circle cx="44.6" cy="151" r="2.8"/><circle cx="48.4" cy="150" r="2.9"/><circle cx="52.4" cy="150" r="2.9"/><circle cx="56.2" cy="151" r="2.8"/></g>';}
+ else if(ty==='snow')L='<rect x="43" y="146" width="16" height="26" rx="5" fill="'+c+'"/><path d="M40.4 167h21v7a2 2 0 0 1-2 2h-17a2 2 0 0 1-2-2z" fill="'+c+'"/><rect x="40.4" y="173" width="21" height="3.6" rx="1.8" fill="#2E3A52"/><rect x="42" y="143.6" width="18" height="6.4" rx="3.2" fill="#FFFFFF"/><path d="M47 154h8M47 158.4h8M47 162.8h8" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round"/>';
+ else if(ty==='hitop')L='<path d="M41 175q-1-10 5-12.6v-8q3-1.6 9.4 0v8q6 2.6 6.6 12.6z" fill="'+c+'"/><path d="M40.4 175q0-4.6 5-5.6h3.6q6.8 1 8.6 5.6z" fill="#FFFFFF"/><circle cx="50.8" cy="158" r="2.2" fill="#FFFFFF"/><path d="M40.5 175.4h21" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"/><path d="M47.4 154.6h6.6" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/>';
+ else if(ty==='mary')L='<rect x="45" y="157" width="11" height="10" rx="3" fill="#FFFFFF"/><path d="M45.4 158q5.1 2.4 10.2 0" fill="none" stroke="#EBDDE0" stroke-width="1"/><path d="M40.5 175q0-9 8.5-9.4h5.4q7.6.6 7.6 9.4z" fill="'+c+'"/><path d="M44.4 169.6h12.6" stroke="'+shade(c,-.25)+'" stroke-width="2.2" stroke-linecap="round"/><circle cx="50.6" cy="169.6" r="1.2" fill="#F8C548"/><path d="M40.8 175.4h21" stroke="rgba(58,38,32,.28)" stroke-width="2.4" stroke-linecap="round"/>';
+ else if(ty==='ballet')L='<path d="M40.4 175q0-6.4 8.4-7.6h6q7.2.6 7.2 7.6z" fill="'+c+'"/><path d="M45 168q5.6 2.8 11 0" fill="none" stroke="'+shade(c,.4)+'" stroke-width="1.2"/><path d="M50.4 169l-3.8-2v4zM50.4 169l3.8-2v4z" fill="#E8628F"/><circle cx="50.4" cy="169" r="1.1" fill="#C2456F"/>';
+ else L='<path d="M40 175q0-10 9.5-10h3q8.5 0 9.5 10z" fill="'+c+'" stroke="'+(c==='#FFFFFF'?'#E4DDD3':'none')+'" stroke-width=".8"/><path d="M40.5 175h21" stroke="'+sole+'" stroke-width="3" stroke-linecap="round"/><path d="M48 168.5h5" stroke="'+(c==='#FFFFFF'?'#9CCBE8':'#FFFFFF')+'" stroke-width="1.4" stroke-linecap="round"/>';
+ return L+mir(L);
+}
+/* ----- poncho (outer layer over shirt and arms) ----- */
+var PONCHO_PATH='M46 77Q60 87 74 77L99 112Q60 138 21 112Z';
+function ponchoSvg(p){
+ var c=p.color,d=shade(c,-.14),tr=p.trim,pt='',s='';
+ if(p.pat==='plaid')pt='<g stroke="'+tr+'" stroke-width="2.4" opacity=".55"><path d="M36 80v56M48 80v56M60 80v56M72 80v56M84 80v56M20 96h82M20 108h82M20 120h82"/></g><g stroke="#FFFFFF" stroke-width=".9" opacity=".6"><path d="M42 80v56M66 80v56M78 80v56M20 102h82M20 114h82"/></g>';
+ else if(p.pat==='snow')pt='<g stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" opacity=".9"><path d="M60 94v14M53.9 97.5l12.2 7M53.9 104.5l12.2-7"/><path d="M40 104v8M36.5 106l7 4M36.5 110l7-4M80 104v8M76.5 106l7 4M76.5 110l7-4"/></g>';
+ else if(p.pat==='bear')pt='<circle cx="60" cy="102" r="8.4" fill="#8A5A3A"/><circle cx="53.6" cy="95.4" r="3.2" fill="#8A5A3A"/><circle cx="66.4" cy="95.4" r="3.2" fill="#8A5A3A"/><circle cx="60" cy="105" r="3.4" fill="#F1D6B8"/><circle cx="56.6" cy="100.6" r="1.1" fill="#3A2620"/><circle cx="63.4" cy="100.6" r="1.1" fill="#3A2620"/><circle cx="60" cy="103.6" r="1.1" fill="#3A2620"/>';
+ else if(p.pat==='dots')pt='<g fill="#FFFFFF" opacity=".85"><circle cx="40" cy="104" r="2.4"/><circle cx="52" cy="112" r="2.4"/><circle cx="64" cy="104" r="2.4"/><circle cx="76" cy="112" r="2.4"/><circle cx="82" cy="102" r="2.4"/><circle cx="58" cy="120" r="2.4"/><circle cx="46" cy="94" r="2.4"/><circle cx="72" cy="94" r="2.4"/></g>';
+ else if(p.pat==='hearts')pt='<g fill="#FFFFFF" opacity=".9"><path d="M60 112s-5-3-5-6.2a2.6 2.6 0 0 1 5-1.3 2.6 2.6 0 0 1 5 1.3c0 3.2-5 6.2-5 6.2z"/><path d="M42 106s-3.4-2-3.4-4.2a1.8 1.8 0 0 1 3.4-.9 1.8 1.8 0 0 1 3.4.9c0 2.2-3.4 4.2-3.4 4.2z"/><path d="M78 106s-3.4-2-3.4-4.2a1.8 1.8 0 0 1 3.4-.9 1.8 1.8 0 0 1 3.4.9c0 2.2-3.4 4.2-3.4 4.2z"/></g>';
+ s='<defs><clipPath id="pcc"><path d="'+PONCHO_PATH+'"/></clipPath></defs><path d="'+PONCHO_PATH+'" fill="'+c+'"/><g clip-path="url(#pcc)">'+pt+'<path d="M21 112Q60 138 99 112" fill="none" stroke="'+tr+'" stroke-width="6.4" stroke-linecap="round"/><path d="M26 114.6Q60 138 94 114.6" fill="none" stroke="'+d+'" stroke-width="1.2" stroke-dasharray="2.4 3" opacity=".7"/></g>';
+ s+='<path d="M47.6 78Q60 88 72.4 78" fill="none" stroke="'+tr+'" stroke-width="4.6" stroke-linecap="round"/>';
+ s+='<path d="M57 86.6q-2 5-.4 8M63 86.6q2 5 .4 8" fill="none" stroke="'+tr+'" stroke-width="1.2" stroke-linecap="round"/><circle cx="56.6" cy="96" r="2.8" fill="#FFFFFF" stroke="#E4DDD3" stroke-width=".6"/><circle cx="63.4" cy="96" r="2.8" fill="#FFFFFF" stroke="#E4DDD3" stroke-width=".6"/>';
+ return s;
+}
+/* ----- gloves ----- */
+function gloveSvg(gl,x,left){
+ var c=gl.color,cf=gl.cuff||'#FFFFFF',sg=left?1:-1,y=118.4,s='';
+ s='<rect x="'+(x-5.9)+'" y="110.6" width="11.8" height="6" rx="2.6" fill="'+cf+'"/><circle cx="'+x+'" cy="'+y+'" r="6.9" fill="'+c+'"/><circle cx="'+(x+sg*6)+'" cy="'+(y-1.6)+'" r="2.8" fill="'+c+'"/>';
+ if(gl.type==='paw')s+='<circle cx="'+x+'" cy="'+(y+1.4)+'" r="2.6" fill="'+cf+'"/><g fill="'+cf+'"><circle cx="'+(x-2.8)+'" cy="'+(y-2.2)+'" r="1.1"/><circle cx="'+x+'" cy="'+(y-3.2)+'" r="1.1"/><circle cx="'+(x+2.8)+'" cy="'+(y-2.2)+'" r="1.1"/></g>';
+ else if(gl.type==='snow')s+='<g stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"><path d="M'+x+' '+(y-3)+'v6M'+(x-2.6)+' '+(y-1.5)+'l5.2 3M'+(x-2.6)+' '+(y+1.5)+'l5.2-3"/></g>';
+ else if(gl.type==='stripe')s+='<g stroke="'+cf+'" stroke-width="1.3"><path d="M'+(x-5.4)+' '+(y-1)+'h10.8M'+(x-5.8)+' '+(y+3)+'h11.6"/></g>';
+ else if(gl.type==='heart')s+='<path d="M'+x+' '+(y+3.4)+'s-3.6-2.2-3.6-4.5a1.8 1.8 0 0 1 3.6-.7 1.8 1.8 0 0 1 3.6.7c0 2.3-3.6 4.5-3.6 4.5z" fill="'+cf+'"/>';
+ else s+='<g fill="#fff" opacity=".55"><circle cx="'+(x-2)+'" cy="'+(y+1)+'" r=".9"/><circle cx="'+(x+2)+'" cy="'+(y+2.6)+'" r=".9"/><circle cx="'+(x+.4)+'" cy="'+(y-2)+'" r=".9"/></g>';
+ return s;
+}
+/* ----- props standing beside the character (outside the scaled body) ----- */
+function propSvg(pr){
+ var t=pr.type;
+ if(t==='tree')return '<rect x="124" y="164" width="8" height="12" rx="1.5" fill="#8A5A3A"/><path d="M128 122l24 44H104z" fill="#3F9158"/><path d="M128 106l19 36H109z" fill="#4FA464"/><path d="M128 92l14 26h-28z" fill="#5DB074"/><path d="M128 84l1.9 4.2 4.5.5-3.3 3 1 4.4-4.1-2.3-4.1 2.3 1-4.4-3.3-3 4.5-.5z" fill="#F8C548"/><circle cx="123" cy="112" r="2.4" fill="#E0523A"/><circle cx="133" cy="126" r="2.6" fill="#F8C548"/><circle cx="121" cy="140" r="2.7" fill="#E8628F"/><circle cx="137" cy="150" r="2.8" fill="#E0523A"/><circle cx="118" cy="158" r="2.6" fill="#F8C548"/><circle cx="128" cy="154" r="2.4" fill="#9B8AE3"/><path d="M118 134q10 5 20-1M112 150q16 7 32-1" fill="none" stroke="#FFF1C9" stroke-width="1.4" stroke-dasharray="1.6 2.6" stroke-linecap="round"/>';
+ if(t==='sled')return '<path d="M-32 168q-1-7 6-7h46q7 0 6 7" fill="none" stroke="#8A8F9C" stroke-width="3" stroke-linecap="round"/><path d="M-32 172q0 3 4 3h44q4 0 4-3" fill="none" stroke="#8A8F9C" stroke-width="3" stroke-linecap="round"/><rect x="-26" y="158" width="44" height="8" rx="3" fill="#C45A4A"/><path d="M-18 158v8M-7 158v8M4 158v8M13 158v8" stroke="#A8443A" stroke-width="1.2"/><rect x="-22" y="165" width="3" height="7" fill="#8A5A3A"/><rect x="12" y="165" width="3" height="7" fill="#8A5A3A"/><rect x="-14" y="146" width="13" height="12" rx="2" fill="#4FA464"/><path d="M-7.5 146v12M-14 151h13" stroke="#F8C548" stroke-width="2"/><circle cx="-7.5" cy="145" r="2.6" fill="#F8C548"/>';
+ if(t==='teddy')return '<ellipse cx="116" cy="173" rx="6.6" ry="4.4" fill="#A8764E"/><ellipse cx="136" cy="173" rx="6.6" ry="4.4" fill="#A8764E"/><ellipse cx="126" cy="162" rx="13.5" ry="13" fill="#A8764E"/><ellipse cx="126" cy="164" rx="7.6" ry="8.4" fill="#F1D6B8"/><ellipse cx="112.4" cy="160" rx="4.4" ry="6.4" fill="#A8764E" transform="rotate(14 112.4 160)"/><ellipse cx="139.6" cy="160" rx="4.4" ry="6.4" fill="#A8764E" transform="rotate(-14 139.6 160)"/><circle cx="117" cy="134.6" r="4.6" fill="#A8764E"/><circle cx="135" cy="134.6" r="4.6" fill="#A8764E"/><circle cx="126" cy="143" r="12" fill="#A8764E"/><circle cx="117" cy="134.8" r="2.3" fill="#F1D6B8"/><circle cx="135" cy="134.8" r="2.3" fill="#F1D6B8"/><ellipse cx="126" cy="148" rx="5" ry="3.8" fill="#F1D6B8"/><ellipse cx="126" cy="146.4" rx="1.9" ry="1.3" fill="#3A2620"/><circle cx="121.6" cy="142" r="1.4" fill="#3A2620"/><circle cx="130.4" cy="142" r="1.4" fill="#3A2620"/><path d="M123.6 149.4q2.4 1.8 4.8 0" fill="none" stroke="#3A2620" stroke-width="1" stroke-linecap="round"/><path d="M114 153q12 6 24 0v4.6q-12 6-24 0z" fill="#E0523A"/><path d="M114.6 153.2l4 1.6M120 156.6l4 1.2M126 157.4l4-.4M131.6 156.8l4-1.4" stroke="#fff" stroke-width="1.2"/><path d="M114 134.6Q126 122 140 128Q134 128.6 136 134.6Z" fill="#D9423A"/><rect x="113" y="132.6" width="26" height="4.2" rx="2.1" fill="#FFFFFF"/><circle cx="141" cy="128" r="2.8" fill="#FFFFFF"/>';
+ if(t==='snowman')return '<path d="M-18 150l-15-12M-18 154l-15 4" stroke="#8A5A3A" stroke-width="2.2" stroke-linecap="round"/><circle cx="-8" cy="160" r="16.5" fill="#FFFFFF" stroke="#D6E4F0" stroke-width="1"/><circle cx="-8" cy="134" r="12.5" fill="#FFFFFF" stroke="#D6E4F0" stroke-width="1"/><circle cx="-12.6" cy="132" r="1.5" fill="#3A2620"/><circle cx="-3.4" cy="132" r="1.5" fill="#3A2620"/><path d="M-8 134.6l10 2.2-10 2.2z" fill="#F29A4A"/><path d="M-12 140q4 3 8 0" fill="none" stroke="#3A2620" stroke-width="1.1" stroke-linecap="round"/><circle cx="-16.4" cy="136.6" r="2.3" fill="#F7A39A" opacity=".7"/><circle cx="0.4" cy="136.6" r="2.3" fill="#F7A39A" opacity=".7"/><path d="M-19 144q11 6 22 0v5q-11 6-22 0z" fill="#E0523A"/><path d="M-3 148l3 12 5-1-3-11z" fill="#E0523A"/><circle cx="-8" cy="156" r="1.7" fill="#3A2620"/><circle cx="-8" cy="164" r="1.7" fill="#3A2620"/><rect x="-17" y="115" width="18" height="12" rx="2" fill="#3A2E36"/><rect x="-21" y="125" width="26" height="4.4" rx="2.2" fill="#3A2E36"/><rect x="-17" y="122.4" width="18" height="3" fill="#E0523A"/><path d="M2 152l15-12M2 156l15 3" stroke="#8A5A3A" stroke-width="2.2" stroke-linecap="round" transform="translate(-12 0)"/>';
+ if(t==='gift')return '<rect x="106" y="150" width="28" height="26" rx="3" fill="#E0523A"/><rect x="117" y="150" width="6" height="26" fill="#F8C548"/><rect x="106" y="160" width="28" height="5.6" fill="#F8C548"/><path d="M120 150q-9-9-13-2q2 5 13 2zM120 150q9-9 13-2q-2 5-13 2z" fill="#F8C548"/><circle cx="120" cy="150" r="2.6" fill="#E8A72E"/><rect x="132" y="162" width="19" height="14" rx="2.6" fill="#4FA464"/><path d="M141.5 162v14M132 169h19" stroke="#FFFFFF" stroke-width="2.2"/><rect x="104" y="120" width="0" height="0"/><rect x="112" y="134" width="16" height="16" rx="2.6" fill="#9B8AE3"/><path d="M120 134v16M112 142h16" stroke="#FFFFFF" stroke-width="2"/><circle cx="120" cy="133.4" r="2" fill="#FFFFFF"/>';
+ if(t==='board')return '<g transform="rotate(7 128 176)"><rect x="117" y="86" width="22" height="90" rx="11" fill="#4F86D6"/><rect x="117" y="86" width="22" height="90" rx="11" fill="none" stroke="#FFFFFF" stroke-width="1.6"/><path d="M128 100v62" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="2.4"/><path d="M128 116l1.6 3.4 3.6.4-2.7 2.5.8 3.6-3.3-1.9-3.3 1.9.8-3.6-2.7-2.5 3.6-.4z" fill="#F8C548"/><rect x="121" y="134" width="14" height="6" rx="2.4" fill="#3A3E4A"/><rect x="121" y="152" width="14" height="6" rx="2.4" fill="#3A3E4A"/></g>';
+ if(t==='tube')return '<path fill-rule="evenodd" d="M-34 166a26 13 0 1 0 52 0a26 13 0 1 0-52 0zM-22 166a14 6.4 0 1 1 28 0a14 6.4 0 1 1-28 0z" fill="#4FB8E0"/><path d="M-30 160q22-10 44 0" fill="none" stroke="#FFFFFF" stroke-opacity=".7" stroke-width="2.4" stroke-linecap="round"/><rect x="-37" y="162" width="6" height="7" rx="3" fill="#F8C548"/><rect x="11" y="162" width="6" height="7" rx="3" fill="#F8C548"/>';
+ return '';
+}
+/* skis: planks under the shoes + poles in the hands */
+function skiPlanks(){var p='<rect x="43.4" y="173" width="13.2" height="17" rx="6" fill="#E0523A"/><rect x="43.4" y="173" width="13.2" height="17" rx="6" fill="none" stroke="#FFFFFF" stroke-width="1"/><path d="M50 177v10" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>';return p+mir(p);}
+function skiPoles(){var p='<path d="M28.4 118L12 176" stroke="#7A5C4E" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="13.2" cy="171.5" rx="4.4" ry="1.7" fill="none" stroke="#7A5C4E" stroke-width="1.4"/>';return p+mir(p);}
+
+var TORSO_PATH='M40 86q2-10 14-10h12q12 0 14 10l4 36q-24 6-48 0z';
+/* full-body character, viewBox 0 0 120 200 (head drawn from the same portrait parts, scaled); props beside it widen the view */
 function avatarBody(w,o,vb){
  o=o||outfit();
- var av=curAv(),hp=headParts(av,o,S.gender,S.avatar||1),sk=av.skin;
- var it=shirt(o.shirt),top=shirtColor(it),pat=PAT_TEE[it.pattern]||'';
- var bt=itemOf('bottom',o.bottom),sh=itemOf('shoes',o.shoes),ac=itemOf('acc',o.acc).id;
+ var av=curAv(),hp=headParts(av,o,S.gender,S.avatar||1),sk=av.skin,girl=S.gender==='girl';
+ var it=itemOf('shirt',o.shirt),top=shirtColor(it),pat=PAT_TEE[it.pattern]||'',lng=!!it.long,dk=shade(top,-.14);
+ var bt=itemOf('bottom',o.bottom),sh=itemOf('shoes',o.shoes),ac=itemOf('acc',o.acc).id,ou=itemOf('outer',o.outer),gl=itemOf('glove',o.glove),pr=itemOf('prop',o.prop);
  var s=2.9,HT='translate('+(60-24*s).toFixed(2)+' '+(60-26*s).toFixed(2)+') scale('+s+')',BT='translate(60 175) scale(.82) translate(-60 -175)';
- var g='<ellipse cx="60" cy="174.5" rx="36" ry="5" fill="#8A6A58" opacity=".14"/><g transform="'+BT+'">';
+ var wide=!!pr.side,cv=!!vb;if(!vb)vb=wide?'-40 -14 200 214':'0 -14 120 214';
+ var g='<ellipse cx="60" cy="174.5" rx="36" ry="5" fill="#8A6A58" opacity=".14"/>';
+ if(wide)g+=propSvg(pr);
+ g+='<g transform="'+BT+'">';
  if(ac==='a_backpack')g+='<rect x="31" y="80" width="58" height="40" rx="12" fill="#E0743A"/><rect x="31" y="98" width="58" height="6" fill="#C7612C"/>';
  g+='</g><g transform="'+HT+'">'+hp.back+'</g><g transform="'+BT+'">';
+ if(pr.type==='skis')g+=skiPlanks();
  // legs
  var legEnd=bt.type==='pants'?150:170;
  g+='<rect x="46" y="124" width="11" height="'+(legEnd-120)+'" rx="5" fill="'+sk+'"/><rect x="63" y="124" width="11" height="'+(legEnd-120)+'" rx="5" fill="'+sk+'"/>';
- // shoes
- var sole=sh.color==='#FFFFFF'?'#CBBFB3':'rgba(58,38,32,.28)';
- if(sh.type==='boots'){g+='<rect x="43.5" y="150" width="15" height="22" rx="5" fill="'+sh.color+'"/><rect x="61.5" y="150" width="15" height="22" rx="5" fill="'+sh.color+'"/><path d="M41 168h20v6a2 2 0 0 1-2 2H43a2 2 0 0 1-2-2zM59 168h20v6a2 2 0 0 1-2 2H61a2 2 0 0 1-2-2z" fill="'+sh.color+'"/><path d="M41 173.5h20M59 173.5h20" stroke="'+sole+'" stroke-width="2.6" stroke-linecap="round"/>';}
- else{g+='<path d="M40 175q0-10 9.5-10h3q8.5 0 9.5 10z" fill="'+sh.color+'" stroke="'+(sh.color==='#FFFFFF'?'#E4DDD3':'none')+'" stroke-width=".8"/><path d="M58 175q0-10 9.5-10h3q8.5 0 9.5 10z" fill="'+sh.color+'" stroke="'+(sh.color==='#FFFFFF'?'#E4DDD3':'none')+'" stroke-width=".8"/><path d="M40.5 175h21M58.5 175h21" stroke="'+sole+'" stroke-width="3" stroke-linecap="round"/><path d="M48 168.5h5M66 168.5h5" stroke="'+(sh.color==='#FFFFFF'?'#9CCBE8':'#FFFFFF')+'" stroke-width="1.4" stroke-linecap="round"/>';}
- // bottoms
- if(bt.type==='pants')g+='<path d="M37 118h46l2 14H35z" fill="'+bt.color+'"/><rect x="43.5" y="124" width="15.5" height="42" rx="6" fill="'+bt.color+'"/><rect x="61" y="124" width="15.5" height="42" rx="6" fill="'+bt.color+'"/>';
- else if(bt.type==='shorts')g+='<path d="M37 118h46l2 14H35z" fill="'+bt.color+'"/><rect x="43" y="124" width="16" height="20" rx="6" fill="'+bt.color+'"/><rect x="61" y="124" width="16" height="20" rx="6" fill="'+bt.color+'"/>';
- else g+='<path d="M39 116h42l10 30q-31 7-62 0z" fill="'+bt.color+'"/><path d="M33 141q27 6 54 0" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".6"/>';
- // torso + arms
- g+='<path d="M42 84q-12 6-12 22" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/><path d="M78 84q12 6 12 22" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/>';
- g+='<path d="M30.5 106l-.8 9M89.5 106l.8 9" stroke="'+sk+'" stroke-width="8" stroke-linecap="round"/><circle cx="29.6" cy="118" r="5.4" fill="'+sk+'"/><circle cx="90.4" cy="118" r="5.4" fill="'+sk+'"/>';
+ g+=shoeSvg(sh);
+ g+=bottomSvg(bt);
+ // hood (hoodie) sits behind the neck
+ if(it.neck==='hood')g+='<path d="M43 82q17-16 34 0l2 11q-19 9-38 0z" fill="'+dk+'"/>';
+ // sleeves
+ if(lng)g+='<path d="M42 84q-12 6-12.4 29" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/><path d="M78 84q12 6 12.4 29" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/><path d="M24.4 111.6h10.4M85.2 111.6h10.4" stroke="'+dk+'" stroke-width="4" stroke-linecap="round"/>';
+ else g+='<path d="M42 84q-12 6-12 22" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/><path d="M78 84q12 6 12 22" stroke="'+top+'" stroke-width="12" stroke-linecap="round" fill="none"/><path d="M30.5 106l-.8 9M89.5 106l.8 9" stroke="'+sk+'" stroke-width="8" stroke-linecap="round"/>';
+ if(girl&&!lng&&ou.id==='o_none')g+='<circle cx="39.6" cy="86.4" r="8" fill="'+top+'"/><circle cx="80.4" cy="86.4" r="8" fill="'+top+'"/>';
  g+='<rect x="54" y="70" width="12" height="12" rx="4" fill="'+sk+'"/>';
- g+='<path d="M40 86q2-10 14-10h12q12 0 14 10l4 36q-24 6-48 0z" fill="'+top+'"/>';
- if(pat)g+='<g transform="translate('+(60-24*1.25)+' '+(99-28*1.25)+') scale(1.25)">'+pat+'</g>';
+ g+='<path d="'+TORSO_PATH+'" fill="'+top+'"/>';
+ if(pat)g+='<defs><clipPath id="tsc"><path d="'+TORSO_PATH+'"/></clipPath></defs><g clip-path="url(#tsc)"><g transform="translate(30 64) scale(1.25)">'+pat+'</g></g>';
+ // neckline / collar
+ if(it.neck==='turtle')g+='<rect x="48.6" y="69" width="22.8" height="13" rx="6" fill="'+top+'"/><path d="M49.6 74.6h20.8M50 78.4h20" stroke="'+dk+'" stroke-width="1.3" opacity=".7"/>';
+ else if(it.neck==='hood')g+='<path d="M45 79q15 13 30 0" fill="none" stroke="'+dk+'" stroke-width="5.4" stroke-linecap="round"/>';
+ else if(it.neck==='cardi')g+='<path d="M50 77l10 15 10-15z" fill="#FFFFFF"/><path d="M48.6 77.6L60 94l11.4-16.4" fill="none" stroke="'+dk+'" stroke-width="2.2" stroke-linejoin="round"/>';
+ else if(lng)g+='<path d="M48.6 77.4q11.4 8.6 22.8 0" fill="none" stroke="'+dk+'" stroke-width="3.4" stroke-linecap="round"/>';
+ else if(girl)g+='<path d="M47 77.6q13 10.4 26 0q-1.4 7-13 8q-11.6-1-13-8z" fill="#FFFFFF" stroke="#E9DED6" stroke-width=".7"/><path d="M60 85.4l-4.6-2.6v5.4zM60 85.4l4.6-2.6v5.4z" fill="#F2A79E"/><circle cx="60" cy="85.4" r="1.4" fill="#E8628F"/>';
+ else g+='<path d="M49.6 77.6q10.4 7.6 20.8 0" fill="none" stroke="'+dk+'" stroke-width="2.4" stroke-linecap="round"/>';
+ if(it.neck==='hood'||lng)g+='<path d="M44 120.4q16 4.4 32 0" fill="none" stroke="'+dk+'" stroke-width="3.2" stroke-linecap="round" opacity=".8"/>';
+ if(ou.id!=='o_none')g+=ponchoSvg(ou);
  if(ac==='a_scarf')g+='<path d="M47 76q13 8 26 0v6q-13 8-26 0z" fill="#E0743A"/><rect x="62" y="80" width="7" height="18" rx="3" fill="#E0743A"/><path d="M63 94h5M63 90h5" stroke="#F8C548" stroke-width="1.4"/>';
  if(ac==='a_bag')g+='<path d="M45 78 82 112" stroke="#7A5C4E" stroke-width="2.6" stroke-linecap="round"/><rect x="73" y="106" width="17" height="14" rx="4" fill="#F8C548"/><path d="M73 110h17" stroke="#E0A82E" stroke-width="1.6"/><circle cx="81.5" cy="113.5" r="1.4" fill="#E0743A"/>';
  if(ac==='a_backpack')g+='<path d="M47 78v26M73 78v26" stroke="#C7612C" stroke-width="3.4" stroke-linecap="round"/>';
+ if(pr.type==='skis')g+=skiPoles();
+ // hands (bare or gloved)
+ if(gl.id!=='gl_none')g+=gloveSvg(gl,29.6,true)+gloveSvg(gl,90.4,false);
+ else g+='<circle cx="29.6" cy="118" r="5.4" fill="'+sk+'"/><circle cx="90.4" cy="118" r="5.4" fill="'+sk+'"/>';
  g+='</g><g transform="'+HT+'">'+hp.head+'</g>';
- return '<svg width="'+w+'" height="'+Math.round(w*(vb?(+vb.split(' ')[3])/(+vb.split(' ')[2]):200/120))+'" viewBox="'+(vb||'0 0 120 200')+'" aria-hidden="true">'+g+'</svg>';
+ var v=vb.split(' ');
+ return '<svg width="'+(cv?w:Math.round(w*(+v[2])/120))+'" height="'+(cv?Math.round(w*(+v[3])/(+v[2])):Math.round(w*(+v[3])/120))+'" viewBox="'+vb+'" aria-hidden="true">'+g+'</svg>';
 }
 var THUMB_VB=(function(){var k=.82;function b(x,y,w,h){return [60+(x-60)*k,175+(y-175)*k,w*k,h*k].map(function(n){return n.toFixed(1);}).join(' ');}
- return {shirt:b(26,68,68,62),bottom:b(26,112,68,64),hair:'16 12 88 88',shoes:b(34,140,52,40),head:'16 8 88 88',face:'28 42 64 46',acc:'8 18 104 150'};})();
+ return {shirt:b(24,68,72,62),outer:b(16,70,88,70),bottom:b(26,112,68,64),hair:'16 12 88 88',shoes:b(34,140,52,40),head:'14 -8 92 94',fa:'14 -8 92 94',glove:b(12,100,96,32),face:'28 42 64 46',acc:'8 18 104 150',prop:'-40 0 200 190'};})();
 /* thumbnails show the item on a plain outfit so other worn items don't hide it */
-function itemThumb(slot,id,w){var cur=outfit(),o=Object.assign({},DEF_OUTFIT,{shirt:cur.shirt});if(slot==='face'||slot==='head'||slot==='acc')o.hair=cur.hair;o[slot]=id;return avatarBody(w,o,THUMB_VB[slot]);}
+function itemThumb(slot,id,w){var cur=outfit(),o=Object.assign(defOutfit(),{shirt:cur.shirt});if(slot==='face'||slot==='head'||slot==='acc'||slot==='fa'||slot==='prop')o.hair=cur.hair;o[slot]=id;var it=itemOf(slot,id),vb=THUMB_VB[slot];if(slot==='prop'&&it.type==='helmet'||slot==='prop'&&it.type==='santa'||slot==='prop'&&it.type==='antler')vb=THUMB_VB.head;else if(slot==='prop'&&!it.side&&it.type==='skis')vb='0 60 120 130';return avatarBody(w,o,vb);}
+/* read-only helpers for the browser tests */
+window.__wd={reward:reward,slotItems:slotItems,SLOTS:SLOTS,setGender:function(g){S.gender=g;S.avatar=1;save();render();},doneWeek:function(){week().days.slice(0,5).forEach(function(d){S.days[d.key]=true;});save();render();}};
+Object.assign(EN,{'티셔츠 · 스웨터':'Tees and Sweaters','판초':'Ponchos','바지':'Pants','바지 · 치마':'Pants and Skirts','신발':'Shoes','장갑':'Gloves','모자 · 리본':'Hats and Ribbons','안경 · 머리띠':'Glasses and Headbands','표정':'Faces','머리':'Hair','가방 · 목도리':'Bags and Scarves','소품':'Props',
+ '선물을 하나씩 골라요!':'Pick one gift from each!','{c}에서 하나씩 골라요. 고르면 바꿀 수 없어요':'Pick one from each in {c}. You cannot change it after picking','먼저 하나씩 골라요':'Pick one from each first'});
 
 /* ===================== Sticker collection =====================
    One sticker per day's thank-you note (typed or handwritten), stored once per note key in S.stickers. */
@@ -2078,28 +2346,30 @@ V.profile=function(){
  var show=Object.assign({},o);if(pv)show[cat]=pv;
  var same=!pv||pv===o[cat];
  var picking=gs==='ready'&&ui.giftPick===W.wk,pk='';
- if(picking){var gcat=r.category,gsel=ui.gsel,gt='';r.items.forEach(function(id){var on=gsel===id;gt+='<button type="button" class="tile'+(on?' sel':'')+'" data-a="giftSel" data-v="'+id+'" aria-pressed="'+on+'">'+itemThumb(gcat,id,62)+'<span style="text-align:center;line-height:1.3">'+itemName(gcat,id)+'</span></button>';});
-  pk='<div class="stack" id="giftpick" style="gap:12px;padding:16px;border-radius:24px;background:#FFF6D9;border:3px solid #F8C548"><div class="row">'+giftSvg(44,'animation:wiggle 1.4s ease-in-out infinite')+'<div style="flex:1"><div class="disp" style="font-size:19px">'+t('선물을 하나만 골라요!')+'</div><div style="font-size:13px;color:#5C4508">'+t('{c} 중에서 마음에 드는 하나를 골라요. 고르면 바꿀 수 없어요',{c:t(r.title)})+'</div></div></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+gt+'</div><button type="button" class="btn '+(gsel?'orange':'off')+'" data-a="giftConfirm"'+(gsel?'':' aria-disabled="true"')+' style="height:52px;font-size:19px">'+(gsel?t('이걸로 받을래요!'):t('먼저 하나를 골라요'))+'</button></div>';}
+ if(picking){var gp=ui.gsel||{};Object.keys(gp).forEach(function(k){if(!pv||k!==cat)show[k]=gp[k];});}
+ if(picking){var gsel=ui.gsel||{},gt='',allp=r.cats.every(function(c){return gsel[c.slot];}),multi=r.cats.length>1;
+  r.cats.forEach(function(c){if(multi)gt+='<div class="disp" style="grid-column:1/-1;font-size:16px;margin-top:2px">'+t(slotLabel(c.slot))+'</div>';c.items.forEach(function(id){var on=gsel[c.slot]===id;gt+='<button type="button" class="tile'+(on?' sel':'')+'" data-a="giftSel" data-v="'+id+'" aria-pressed="'+on+'">'+itemThumb(c.slot,id,62)+'<span style="text-align:center;line-height:1.3">'+itemName(c.slot,id)+'</span></button>';});});
+  pk='<div class="stack" id="giftpick" style="gap:12px;padding:16px;border-radius:24px;background:#FFF6D9;border:3px solid #F8C548"><div class="row">'+giftSvg(44,'animation:wiggle 1.4s ease-in-out infinite')+'<div style="flex:1"><div class="disp" style="font-size:19px">'+(multi?t('선물을 하나씩 골라요!'):t('선물을 하나만 골라요!'))+'</div><div style="font-size:13px;color:#5C4508">'+(multi?t('{c}에서 하나씩 골라요. 고르면 바꿀 수 없어요',{c:rTitle(r)}):t('{c} 중에서 마음에 드는 하나를 골라요. 고르면 바꿀 수 없어요',{c:rTitle(r)}))+'</div></div></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+gt+'</div><button type="button" class="btn '+(allp?'orange':'off')+'" data-a="giftConfirm"'+(allp?'':' aria-disabled="true"')+' style="height:52px;font-size:19px">'+(allp?t('이걸로 받을래요!'):multi?t('먼저 하나씩 골라요'):t('먼저 하나를 골라요'))+'</button></div>';}
  // category chips
- var cats='';SLOTS.forEach(function(sl){var on=sl===cat,isNew=r.category===sl&&gs==='claimed'&&ui.giftOpen;cats+='<button type="button" data-a="setCat" data-v="'+sl+'" aria-pressed="'+on+'" class="wcat'+(on?' on':'')+'">'+t(SLOT_LABEL[sl])+(isNew?'<b class="ndot"></b>':'')+'</button>';});
+ var cats='';SLOTS.forEach(function(sl){var on=sl===cat,isNew=r.cats.some(function(c){return c.slot===sl;})&&gs==='claimed'&&ui.giftOpen;cats+='<button type="button" data-a="setCat" data-v="'+sl+'" aria-pressed="'+on+'" class="wcat'+(on?' on':'')+'">'+t(slotLabel(sl))+(isNew?'<b class="ndot"></b>':'')+'</button>';});
  // items
  var tiles='';slotItems(cat).forEach(function(it){var lk=!owns(cat,it.id),sel=(pv||o[cat])===it.id,wearing=o[cat]===it.id,nm=itemName(cat,it.id);
   tiles+='<button type="button" class="tile'+(lk?' locked':sel?' sel':'')+'" data-a="pickItem" data-v="'+it.id+'" aria-label="'+nm+(lk?t(', 잠겨 있어요'):sel&&!wearing?t(', 미리 보는 중'):'')+'">'+itemThumb(cat,it.id,62)+'<span style="text-align:center;line-height:1.3">'+(lk?t('잠겨 있어요'):nm)+'</span>'+(lk?'<span class="lock" style="right:8px;top:8px;width:24px;height:24px;border-radius:12px">'+lock()+'</span>':'')+(wearing?'<span class="wearing">'+t('입는 중')+'</span>':'')+'</button>';});
  // weekly reward card
- var rt='';r.items.forEach(function(id){var lk=gs!=='claimed'||!owns(r.category,id);rt+='<span class="tee" style="overflow:hidden"><span style="opacity:'+(lk?.45:1)+';display:flex">'+itemThumb(r.category,id,50)+'</span>'+(lk?'<span class="lock">'+lock()+'</span>':'')+'</span>';});
+ var rt='';r.items.forEach(function(id){var rs=slotOfItem(id),lk=gs!=='claimed'||!owns(rs,id);rt+='<span class="tee" style="overflow:hidden"><span style="opacity:'+(lk?.45:1)+';display:flex">'+itemThumb(rs,id,50)+'</span>'+(lk?'<span class="lock">'+lock()+'</span>':'')+'</span>';});
  // stickers
  var sl=stickerList(),ns=sl.length,prev='';sl.slice(-8).reverse().forEach(function(x){prev+='<span class="stkmini" title="'+stkName(x.kind)+'">'+stickerSvg(x.kind,40)+'</span>';});
  return '<div class="stack">'+
  '<div class="between" style="align-items:center;padding-top:2px"><div><h1 class="disp" style="font-size:26px">'+t('내 프로필')+'</h1><div class="meta">'+t('Little ones QT')+' · '+wkLabel()+'</div></div>'+langToggle()+'</div>'+
- (ui.giftOpen?'<div class="row" style="padding:12px 14px;border-radius:20px;background:#FFF6D9;border:3px solid #F8C548;animation:pop .5s ease-out">'+giftSvg(44,'animation:wiggle 1.4s ease-in-out 2')+'<div style="flex:1"><div class="disp" style="font-size:18px">'+t('이번 주 선물이 열렸어요!')+'</div><div style="font-size:13px;color:#5C4508">'+t('{c} 중에서 하나를 골랐어요. 옷장에서 입어 보세요',{c:t(r.title)})+'</div></div></div>':'')+
+ (ui.giftOpen?'<div class="row" style="padding:12px 14px;border-radius:20px;background:#FFF6D9;border:3px solid #F8C548;animation:pop .5s ease-out">'+giftSvg(44,'animation:wiggle 1.4s ease-in-out 2')+'<div style="flex:1"><div class="disp" style="font-size:18px">'+t('이번 주 선물이 열렸어요!')+'</div><div style="font-size:13px;color:#5C4508">'+t('{c} 중에서 하나를 골랐어요. 옷장에서 입어 보세요',{c:rTitle(r)})+'</div></div></div>':'')+
  '<div class="stage"><svg width="100%" height="100%" viewBox="0 0 350 330" preserveAspectRatio="xMidYMax slice" aria-hidden="true" style="position:absolute;inset:0"><rect width="350" height="330" fill="#DCE7C6"/><ellipse cx="62" cy="46" rx="26" ry="8" fill="#F4F8EA"/><ellipse cx="290" cy="64" rx="22" ry="7" fill="#F4F8EA"/><path d="M0 250Q90 222 180 240T350 232V330H0z" fill="#B8D48E"/><path d="M0 276Q110 256 220 272T350 266V330H0z" fill="#9CC069"/><ellipse cx="175" cy="300" rx="70" ry="10" fill="#7FA44E" opacity=".45"/></svg>'+
  star4(16,'#FFFFFF','position:absolute;left:16%;top:22%;animation:twinkle 2.4s ease-in-out infinite')+star4(20,'#F8C548','position:absolute;right:15%;top:16%;animation:twinkle 2s ease-in-out .5s infinite')+
- '<span class="stagefig" role="img" aria-label="'+t('내 캐릭터')+'">'+avatarBody(168,show)+'</span>'+
+ '<span class="stagefig" role="img" aria-label="'+t('내 캐릭터')+'">'+avatarBody(156,show)+'</span>'+
  '<span class="chip" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:#FFFFFF;color:#44572A;font-size:13px;white-space:nowrap">'+(pv&&!same?t('미리 보는 중')+' · '+itemName(cat,pv):t('지금 입은 옷')+' · '+itemName('shirt',o.shirt))+'</span></div>'+
  pk+'<div class="card stack" id="wardrobe" style="gap:12px"><div class="between" style="align-items:center"><div class="disp" style="font-size:19px">'+t('내 옷장')+'</div><span class="meta">'+t('옷을 눌러 미리 입어 보세요')+'</span></div>'+
  '<div class="wcats">'+cats+'</div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+tiles+'</div>'+
  '<button type="button" class="btn '+(same?'off':'orange')+'" data-a="wearItem"'+(same?' aria-disabled="true"':'')+' style="height:52px;font-size:19px">'+(same?t('지금 입고 있어요'):t('이걸로 입을래요!'))+'</button></div>'+
- '<div class="stack" style="gap:12px;padding:16px;border-radius:24px;background:#FBEBB8"><div class="row"><span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7792E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#6E5410">'+t('이번 주 선물')+'</div><div class="disp" style="font-size:19px">'+t(r.title)+'</div></div><span class="chip" style="background:'+(gs==='claimed'?'#6F9A47':gs==='ready'?'#F8C548':'#FFFFFF')+';color:'+(gs==='claimed'?'#FFFFFF':gs==='ready'?'#3A2620':'#7A5C4E')+'">'+(gs==='claimed'?t('받았어요!'):gs==='ready'?t('도착했어요!'):t('잠겨 있어요'))+'</span></div><div style="display:flex;justify-content:space-between;gap:6px">'+rt+'</div>'+(gs==='claimed'?'<button class="btn dark" type="button" data-a="setCat" data-v="'+r.category+'" style="height:50px;font-size:18px">'+t('옷장에서 바꿔 입기')+'</button>':gs==='ready'?'<button class="btn dark" type="button" data-a="gift" data-v="'+W.wk+'" style="height:50px;font-size:18px">'+t('선물 고르기')+'</button>':'<div style="font-size:13px;font-weight:500;color:#5C4508">'+t('월~금 큐티를 모두 마치면 금요일에 선물이 열려요 · {n}일 남았어요',{n:5-n})+'</div>')+'</div>'+
+ '<div class="stack" style="gap:12px;padding:16px;border-radius:24px;background:#FBEBB8"><div class="row"><span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C7792E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#6E5410">'+t('이번 주 선물')+'</div><div class="disp" style="font-size:19px">'+rTitle(r)+'</div></div><span class="chip" style="background:'+(gs==='claimed'?'#6F9A47':gs==='ready'?'#F8C548':'#FFFFFF')+';color:'+(gs==='claimed'?'#FFFFFF':gs==='ready'?'#3A2620':'#7A5C4E')+'">'+(gs==='claimed'?t('받았어요!'):gs==='ready'?t('도착했어요!'):t('잠겨 있어요'))+'</span></div><div style="display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px">'+rt+'</div>'+(gs==='claimed'?'<button class="btn dark" type="button" data-a="setCat" data-v="'+r.category+'" style="height:50px;font-size:18px">'+t('옷장에서 바꿔 입기')+'</button>':gs==='ready'?'<button class="btn dark" type="button" data-a="gift" data-v="'+W.wk+'" style="height:50px;font-size:18px">'+t('선물 고르기')+'</button>':'<div style="font-size:13px;font-weight:500;color:#5C4508">'+t('월~금 큐티를 모두 마치면 금요일에 선물이 열려요 · {n}일 남았어요',{n:5-n})+'</div>')+'</div>'+
  '<div class="card stack" style="gap:12px"><div class="between" style="align-items:center"><div class="disp" style="font-size:19px">'+t('내 스티커 모음')+'</div><button type="button" data-a="go" data-v="stickers" style="height:36px;padding:0 14px;border:0;border-radius:18px;background:#F3F0EA;font-size:13px;font-weight:700">'+t('전체 보기')+'</button></div>'+
  (ns?'<div class="row" style="gap:12px;padding:12px 14px;border-radius:20px;background:#FBEBB8">'+stickerSvg(sl[sl.length-1].kind,44)+'<div class="disp" style="font-size:20px;line-height:1.3">'+t('지금까지 모은 스티커 {n}개!',{n:ns})+'<div style="font-family:var(--body);font-size:12px;font-weight:700;color:#6E5410;margin-top:2px">'+t('감사 {a} · 암송 {b}',{a:sl.filter(function(x){return stkCat(x.key)!=='mem';}).length,b:sl.filter(function(x){return stkCat(x.key)==='mem';}).length})+'</div></div></div><div class="stkrow">'+prev+'</div>':
   '<div class="row" style="gap:12px;padding:14px;border-radius:20px;background:#F3F0EA">'+stickerSvg('fri',44,'opacity:.35')+'<div style="flex:1"><div style="font-size:15px;font-weight:700">'+t('아직 모은 스티커가 없어요')+'</div><div style="font-size:13px;color:#5E514A">'+t('감사 노트를 쓰면 첫 스티커를 받아요!')+'</div></div></div><button type="button" class="btn dark" data-a="go" data-v="thanks" style="height:48px;font-size:17px">'+t('감사 노트 쓰러 가기')+'</button>')+'</div>'+
@@ -2406,7 +2676,7 @@ function renderLayer(){
  var h='';
  if(ui.cel){var c=celL(ui.cel),dp='';['mon','tue','wed','thu','fri'].forEach(function(d,i){dp+='<button type="button" class="'+(ui.cel===d?'on':'')+'" data-a="celDay" data-v="'+d+'" aria-label="'+t('{d} 축하 미리 보기',{d:dayFull(i+1)})+'">'+dayL(i+1)+'</button>';});
   h+='<div class="overlay"><div class="fx" aria-hidden="true">'+fx(ui.cel)+'</div><div class="dialog" role="dialog" aria-modal="true" aria-label="'+c.title+'"><span class="chip" style="background:'+c.bg+';color:'+c.fg+'">'+c.chip+'</span><div style="height:112px;display:flex;align-items:center;justify-content:center">'+celArt(ui.cel)+'</div><h2 class="disp" style="font-size:27px;line-height:1.25">'+c.title+'</h2><div style="font-size:15px;line-height:1.6;color:#4A3730">'+c.msg+'</div><button type="button" class="btn dark" data-a="celCal" style="margin-top:10px;height:54px;font-size:19px">'+t('내 큐티 기록 보기')+''+arrow()+'</button><button type="button" class="ghost" data-a="celClose">'+t('문제 다시 보기')+'</button></div></div>';}
- else if(ui.reward&&view==='profile'){var r=reward(),rt='';r.items.forEach(function(id){rt+='<span style="width:46px;height:46px;border-radius:15px;background:#F3F0EA;display:flex;align-items:center;justify-content:center">'+tee(36,id)+'</span>';});
+ else if(ui.reward&&view==='profile'){var r=reward(),rt='';r.items.forEach(function(id){rt+='<span style="width:46px;height:46px;border-radius:15px;background:#F3F0EA;display:flex;align-items:center;justify-content:center">'+itemThumb(slotOfItem(id)||'shirt',id,36)+'</span>';});
   h+='<div class="overlay"><div class="fx" aria-hidden="true">'+confetti()+'</div><div class="dialog" role="dialog" aria-modal="true" aria-label="'+t('이번 주 큐티 완료')+'"><div style="position:relative;width:120px;height:104px">'+star4(22,'#F8C548','position:absolute;left:0;top:8px;animation:twinkle 1.6s ease-in-out infinite')+star4(16,'#B7A8EE','position:absolute;right:2px;top:0;animation:twinkle 1.9s ease-in-out .4s infinite')+star4(18,'#F2A79E','position:absolute;right:8px;bottom:6px;animation:twinkle 1.7s ease-in-out .8s infinite')+'<span style="position:absolute;left:12px;top:4px">'+flower(96)+'</span></div><h2 class="disp" style="font-size:30px">'+t('해냈어요!')+'</h2><div style="font-size:15px;line-height:1.6;color:#4A3730">'+t('이번 주 큐티를 5일 모두 마쳤어요!')+'<br>'+t('아바타에게 새 티셔츠를 골라 주세요!')+'</div><div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center">'+rt+'</div><button type="button" class="btn dark" data-a="rewardGo" style="margin-top:8px;height:54px;font-size:19px">'+t('티셔츠 고르러 가기')+'</button><button type="button" class="ghost" data-a="rewardClose">'+t('나중에 고를게요')+'</button></div></div>';}
  if(ui.verse)h+=versePop();
  if(ui.toast)h+='<div class="toast" role="status">'+ui.toast+'</div>';

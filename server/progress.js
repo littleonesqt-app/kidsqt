@@ -31,7 +31,7 @@ const FIELDS = {
   bible:     { kind: 'lww', key: DATE_RE, ok: v => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length <= 3 && typeof v.id === 'string' && /^[a-z0-9-]{1,40}$/.test(v.id) && Number.isInteger(v.p) && v.p >= 0 && v.p <= 300 },
   bibleDone: { kind: 'union', key: DATE_RE },
   flipSound: { kind: 'scalar', ok: v => typeof v === 'boolean' },
-  outfit:    { kind: 'lww', key: /^(shirt|bottom|hair|shoes|head|face|acc)$/, ok: v => typeof v === 'string' && ID_RE.test(v) }
+  outfit:    { kind: 'lww', key: /^(shirt|outer|bottom|hair|shoes|glove|head|fa|face|acc|prop)$/, ok: v => typeof v === 'string' && ID_RE.test(v) }
 };
 
 const MAX_STATE_BYTES = 8 * 1024 * 1024;
