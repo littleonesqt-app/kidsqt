@@ -158,7 +158,7 @@ var PG_EN={
    'This Friday, we hope children will move beyond looking only at hard situations and finish the week by discovering small chances to trust God and show love, even in the middle of them.']}
 };
 
-var EN={"감사한 일 한 줄을 쓰면 꽃이 피어요!": "Write one thing you thank God for and a flower blooms!", "감사 꽃이 활짝 피었어요!": "Your thank-you flower is in bloom!", "쓰면 꽃이 피어요!": "Write and a flower will bloom!", "이번 주 감사 꽃밭": "This week's thank-you garden", "오늘 감사도 남겼어요!": "You wrote your thank-you too!", "오늘 하나님께 감사한 일 한 줄": "One thing I thank God for today", "예: 맛있는 밥을 먹게 해 주셔서 감사해요": "e.g. Thank You for yummy food", "건너뛰어도 괜찮아요. 감사 노트에서 나중에 써도 돼요": "It's okay to skip. You can write it later in Thank-You Notes.", "오늘 감사 노트가 비어 있어요": "Today's thank-you note is empty", "하나님께 감사한 일 한 줄만 써 볼까요?": "Want to write one thing you thank God for?", "손가락으로 좌우로 밀거나 화살표를 눌러 책장을 넘겨보세요!": "Swipe left or right, or tap the arrows to turn the page!", "말씀 암송을 완료했어요! 스티커를 받았어요!": "Great job memorizing God's Word! You earned a sticker!", "암송 별 {n}/5 · 스티커 모음에 쏙 들어갔어요": "Memory star {n}/5 · It's in your sticker collection", "암송 스티커": "Memory Verse Sticker", "감사 스티커": "Thank-You Sticker", "전체": "All", "말씀 암송": "Memorization", "암송": "Memory", "감사": "Thanks", "감사 노트를 쓰면": "for thank-you notes", "말씀 암송을 하면": "for memory practice", "감사 노트를 쓰고 말씀을 암송할 때마다 스티커가 모여요": "Collect stickers by writing thank-you notes and memorizing God's Word", "하나님께 감사한 마음과 말씀이 차곡차곡 모였어요": "Your thankful heart and God's Word are filling up your sticker book!", "감사 노트를 쓰거나 말씀을 암송하면 스티커를 받아요!": "Write a thank-you note or practice your memory verse to get a sticker!", "말씀 암송을 마치면 암송 스티커를 받아요!": "Finish a memory practice to get a memory verse sticker!", "감사 노트를 쓰면 감사 스티커를 받아요!": "Write a thank-you note to get a thank-you sticker!", "감사 노트 쓰기": "Write a note", "감사 {a} · 암송 {b}": "Thanks {a} · Memory {b}", "성경책 열기": "Open the Bible", "표지로 돌아가기": "Back to the cover", "이어서 읽기": "Continue Reading", "처음부터 읽기": "Start from the Beginning", "다시 읽기": "Read Again", "읽기 완료": "Finished", "이전 장": "Previous page", "다음 장": "Next page", "{n} / {t} 절": "Verse {n} of {t}", "책장 넘기는 소리 켜기": "Turn page sound on", "책장 넘기는 소리 끄기": "Turn page sound off", "이 쪽 소리로 듣기": "Listen to this page", "하나님의 말씀을 잘 읽었어요!": "Great job reading God's Word!", "이제 말씀을 함께 묵상해 볼까요?": "Are you ready to reflect on what you learned?", "묵상하러 가기": "Let's Reflect!", "처음부터 다시 읽기": "Read it again from the start", "{r} 이야기책 열기": "Open the {r} storybook", "무지개 아래에서 웃고 있는 성경책과 해님 그림": "A smiling Bible under a rainbow with a smiling sun", "다 썼어요": "Done", "꽃이 피었어요": "Flower bloomed", "새싹이에요": "Sprout", "감사 꽃 5송이가 모두 피었어요!": "All 5 thank-you flowers are blooming!", "{r} 말씀 보기": "Read {r}", "닫기": "Close", "오늘의 말씀": "Bible verse","바지 · 치마": "Pants & Skirts", "머리": "Hair", "신발": "Shoes", "모자 · 리본": "Hats & Bows", "얼굴": "Face", "액세서리": "Accessories", "새 바지와 치마": "New Pants & Skirts", "새 머리 모양": "New Hairstyles", "새 신발": "New Shoes", "새 액세서리": "New Accessories", "새 모자와 리본": "New Hats & Bows", "새 얼굴 꾸미기": "New Face Fun", "{s}를 받았어요! 스티커 모음에 쏙 들어갔어요": "You got a {s}! It's in your sticker collection.", "감사 노트를 쓰면 그날의 스티커를 받아요 · {n}개 남았어요": "Write a thank-you note to get that day's sticker · {n} to go", "{c} {n}개가 옷장에 들어왔어요. 골라서 입어 보세요": "{c}: {n} items are in your closet. Pick one to try on!", "내 캐릭터": "My character", "미리 보는 중": "Previewing", "내 스티커 모음": "My Sticker Collection", "전체 보기": "View All", "지금까지 모은 스티커 {n}개!": "You've collected {n} stickers!", "아직 모은 스티커가 없어요": "No stickers yet", "감사 노트를 쓰면 첫 스티커를 받아요!": "Write a thank-you note to get your first sticker!", "감사 노트 쓰러 가기": "Write a thank-you note", "감사 노트를 쓸 때마다 스티커가 모여요": "Every thank-you note adds a sticker", "하나님께 감사한 마음이 차곡차곡 모였어요": "Your thankful heart is filling up your sticker book!", "스티커 종류": "Sticker types", "모은 스티커 전체": "All my stickers", "이번 주 큐티를 5일 모두 마치면 열려요!": "Finish all 5 days of QT this week to unlock it!", "{d} 주의 선물로 열려요!": "Unlocks as the gift for the week of {d}!", "프로필": "Profile",
+var EN={"한 구절씩 듣고, 기다렸다가 소리 내어 따라 읽어요": "Listen to one part, wait, then say it back out loud", "이제 따라 읽어요!": "Now you say it!", "잘 들어요": "Listen carefully", "다음 말씀": "Next part", "잘 보고 외워요! 곧 말씀이 사라져요": "Look carefully and remember! The verse will disappear soon", "다 외웠어요!": "I remembered it!", "말씀이 사라졌어요. 외운 말씀을 녹음해요!": "The verse is gone. Record what you remember!", "한 번만 다시 보기": "Peek one more time", "감사한 일 한 줄을 쓰면 꽃이 피어요!": "Write one thing you thank God for and a flower blooms!", "감사 꽃이 활짝 피었어요!": "Your thank-you flower is in bloom!", "쓰면 꽃이 피어요!": "Write and a flower will bloom!", "이번 주 감사 꽃밭": "This week's thank-you garden", "오늘 감사도 남겼어요!": "You wrote your thank-you too!", "오늘 하나님께 감사한 일 한 줄": "One thing I thank God for today", "예: 맛있는 밥을 먹게 해 주셔서 감사해요": "e.g. Thank You for yummy food", "건너뛰어도 괜찮아요. 감사 노트에서 나중에 써도 돼요": "It's okay to skip. You can write it later in Thank-You Notes.", "오늘 감사 노트가 비어 있어요": "Today's thank-you note is empty", "하나님께 감사한 일 한 줄만 써 볼까요?": "Want to write one thing you thank God for?", "손가락으로 좌우로 밀거나 화살표를 눌러 책장을 넘겨보세요!": "Swipe left or right, or tap the arrows to turn the page!", "말씀 암송을 완료했어요! 스티커를 받았어요!": "Great job memorizing God's Word! You earned a sticker!", "암송 별 {n}/5 · 스티커 모음에 쏙 들어갔어요": "Memory star {n}/5 · It's in your sticker collection", "암송 스티커": "Memory Verse Sticker", "감사 스티커": "Thank-You Sticker", "전체": "All", "말씀 암송": "Memorization", "암송": "Memory", "감사": "Thanks", "감사 노트를 쓰면": "for thank-you notes", "말씀 암송을 하면": "for memory practice", "감사 노트를 쓰고 말씀을 암송할 때마다 스티커가 모여요": "Collect stickers by writing thank-you notes and memorizing God's Word", "하나님께 감사한 마음과 말씀이 차곡차곡 모였어요": "Your thankful heart and God's Word are filling up your sticker book!", "감사 노트를 쓰거나 말씀을 암송하면 스티커를 받아요!": "Write a thank-you note or practice your memory verse to get a sticker!", "말씀 암송을 마치면 암송 스티커를 받아요!": "Finish a memory practice to get a memory verse sticker!", "감사 노트를 쓰면 감사 스티커를 받아요!": "Write a thank-you note to get a thank-you sticker!", "감사 노트 쓰기": "Write a note", "감사 {a} · 암송 {b}": "Thanks {a} · Memory {b}", "성경책 열기": "Open the Bible", "표지로 돌아가기": "Back to the cover", "이어서 읽기": "Continue Reading", "처음부터 읽기": "Start from the Beginning", "다시 읽기": "Read Again", "읽기 완료": "Finished", "이전 장": "Previous page", "다음 장": "Next page", "{n} / {t} 절": "Verse {n} of {t}", "책장 넘기는 소리 켜기": "Turn page sound on", "책장 넘기는 소리 끄기": "Turn page sound off", "이 쪽 소리로 듣기": "Listen to this page", "하나님의 말씀을 잘 읽었어요!": "Great job reading God's Word!", "이제 말씀을 함께 묵상해 볼까요?": "Are you ready to reflect on what you learned?", "묵상하러 가기": "Let's Reflect!", "처음부터 다시 읽기": "Read it again from the start", "{r} 이야기책 열기": "Open the {r} storybook", "무지개 아래에서 웃고 있는 성경책과 해님 그림": "A smiling Bible under a rainbow with a smiling sun", "다 썼어요": "Done", "꽃이 피었어요": "Flower bloomed", "새싹이에요": "Sprout", "감사 꽃 5송이가 모두 피었어요!": "All 5 thank-you flowers are blooming!", "{r} 말씀 보기": "Read {r}", "닫기": "Close", "오늘의 말씀": "Bible verse","바지 · 치마": "Pants & Skirts", "머리": "Hair", "신발": "Shoes", "모자 · 리본": "Hats & Bows", "얼굴": "Face", "액세서리": "Accessories", "새 바지와 치마": "New Pants & Skirts", "새 머리 모양": "New Hairstyles", "새 신발": "New Shoes", "새 액세서리": "New Accessories", "새 모자와 리본": "New Hats & Bows", "새 얼굴 꾸미기": "New Face Fun", "{s}를 받았어요! 스티커 모음에 쏙 들어갔어요": "You got a {s}! It's in your sticker collection.", "감사 노트를 쓰면 그날의 스티커를 받아요 · {n}개 남았어요": "Write a thank-you note to get that day's sticker · {n} to go", "{c} {n}개가 옷장에 들어왔어요. 골라서 입어 보세요": "{c}: {n} items are in your closet. Pick one to try on!", "내 캐릭터": "My character", "미리 보는 중": "Previewing", "내 스티커 모음": "My Sticker Collection", "전체 보기": "View All", "지금까지 모은 스티커 {n}개!": "You've collected {n} stickers!", "아직 모은 스티커가 없어요": "No stickers yet", "감사 노트를 쓰면 첫 스티커를 받아요!": "Write a thank-you note to get your first sticker!", "감사 노트 쓰러 가기": "Write a thank-you note", "감사 노트를 쓸 때마다 스티커가 모여요": "Every thank-you note adds a sticker", "하나님께 감사한 마음이 차곡차곡 모였어요": "Your thankful heart is filling up your sticker book!", "스티커 종류": "Sticker types", "모은 스티커 전체": "All my stickers", "이번 주 큐티를 5일 모두 마치면 열려요!": "Finish all 5 days of QT this week to unlock it!", "{d} 주의 선물로 열려요!": "Unlocks as the gift for the week of {d}!", "프로필": "Profile",
 "#31 · 골로새서 1:13-20": "#31 · Colossians 1:13–20",
 "#31 · 골로새서 1:13-20 · 가정에서 함께하는 묵상": "#31 · Colossians 1:13–20 · Devotions to share at home",
 "#31 · 이번 주": "#31 · This Week",
@@ -2322,8 +2322,8 @@ function memFresh(day){
  if(day==='tue'){var bl=memBlanks();return {placed:{},bank:memShuffle(bl.length,11).map(function(k){return bl[k];}),sel:null};}
  if(day==='thu')return {n:0,bank:memShuffle(w.length,23),sel:null,miss:0};
  if(day==='wed')return {rev:{}};
- if(day==='fri')return {rec:'idle',showVerse:false,err:'',list:null};
- return {playing:-1,heard:false};
+ if(day==='fri')return {rec:'idle',phase:'show',peek:false,ms:0,err:'',list:null};
+ return {playing:-1,wait:-1,waitMs:0,heard:false};
 }
 function memStarsRow(n,size){var h='';for(var i=0;i<5;i++)h+=star5(size||16,i<n?'#F8C548':'#E4DDD3');return '<span class="mstars" role="img" aria-label="'+t('암송 별 {n}개',{n:n})+'">'+h+'</span>';}
 
@@ -2333,8 +2333,9 @@ V.memory=function(){
  var tabs='';MEM_DAYS.forEach(function(c,i){var on=c===day,dn=memDone(c);var lk=!memDayOpen(c);tabs+='<button type="button" class="mtab'+(on?' on':'')+(lk?' locked':'')+'" data-a="memDay" data-v="'+c+'" aria-pressed="'+on+'"'+(lk?' aria-label="'+t('{d}, 그날 열려요',{d:dayFull(i+1)})+'"':'')+'><span>'+dayL(i+1)+'</span>'+(dn?star5(14,'#F8C548'):lk?lockI(13):'<i></i>')+'</button>';});
  var body='',w=memWords();
  if(day==='mon'){
-  var ph='';memPhrases().forEach(function(p,i){ph+='<span class="mphr'+(st.playing===i?' on':'')+'">'+esc(p)+'</span>';});
-  body='<div class="mhint">'+t('말씀을 듣고, 소리 내어 따라 읽어요')+'</div><div class="mverse">'+ph+'</div>'+
+  var ph='';memPhrases().forEach(function(p,i){ph+='<span class="mphr'+(st.playing===i?(st.wait===i?' on echo':' on'):'')+'">'+esc(p)+'</span>';});
+  var echo=st.wait>=0?'<div class="mecho" role="status"><b>'+t('이제 따라 읽어요!')+'</b><div class="mcd"><i style="animation-duration:'+st.waitMs+'ms"></i></div><button type="button" class="ghost" data-a="memSkip" style="height:36px">'+t('다음 말씀')+'</button></div>':(st.playing>=0?'<div class="mecho listen" role="status"><b>'+t('잘 들어요')+'</b></div>':'');
+  body='<div class="mhint">'+t('한 구절씩 듣고, 기다렸다가 소리 내어 따라 읽어요')+'</div><div class="mverse">'+ph+'</div>'+echo+
   '<div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn dark mbtn" data-a="memListen">'+(st.playing>=0?t('듣기 멈추기'):(st.heard?t('한 번 더 듣기'):t('들어 보기')))+'</button></div>'+
   '<button type="button" class="btn '+(st.heard||!('speechSynthesis' in window)?'orange':'off')+'" data-a="memFinish" data-v="mon">'+t('따라 읽었어요!')+'</button>';
  }else if(day==='tue'){
@@ -2368,12 +2369,14 @@ V.memory=function(){
 function memRefText(){return pk('memRef');}
 
 /* ---------- Friday: record & upload ---------- */
-var MemRec={rec:null,chunks:[],stream:null,blob:null,url:'',timer:0,t0:0,audio:null,playing:'',local:[]};
+var MemRec={wt:0,ft:0,rec:null,chunks:[],stream:null,blob:null,url:'',timer:0,t0:0,audio:null,playing:'',local:[]};
 function memRecBody(st){
  var s=st.rec,w=memWords(),list=st.list;
- var verse=st.showVerse?'<div class="mverse">'+w.map(function(x){return '<span class="mword">'+esc(x)+'</span>';}).join('')+'</div>':'';
- var h='<div class="mhint">'+t('말씀을 보지 않고 외워서 녹음해요. 다 외웠으면 올려요!')+'</div>'+
- '<button type="button" class="ghost" data-a="memToggleVerse" style="align-self:center;height:36px">'+(st.showVerse?t('말씀 가리기'):t('말씀 살짝 보기'))+'</button>'+verse;
+ if(st.phase==='show'){
+  return '<div class="mhint">'+t('잘 보고 외워요! 곧 말씀이 사라져요')+'</div><div class="mverse">'+w.map(function(x){return '<span class="mword">'+esc(x)+'</span>';}).join(' ')+'</div><div class="mcd"><i style="animation-duration:'+st.ms+'ms"></i></div><button type="button" class="btn orange" data-a="memFriHide" style="height:50px;font-size:17px">'+t('다 외웠어요!')+'</button>';
+ }
+ var h='<div class="mhint">'+t('말씀이 사라졌어요. 외운 말씀을 녹음해요!')+'</div>'+
+ (st.peek||s!=='idle'?'':'<button type="button" class="ghost" data-a="memPeek" style="align-self:center;height:36px">'+t('한 번만 다시 보기')+'</button>');
  if(st.err)h+='<div class="ferr" role="alert">'+ico(MEM_INFO,18,'#9A4518')+'<span>'+st.err+'</span></div>'+(MEM_DEMO&&!memDone('fri')?'<button type="button" class="btn ghostbtn" data-a="memFinish" data-v="fri" style="height:48px;font-size:16px">'+t('시연: 녹음 없이 별 받기')+'</button>':'');
  if(s==='recording')h+='<div class="mrecwrap"><button type="button" class="mrec on" data-a="memRecStop" aria-label="'+t('녹음 멈추기')+'"><span class="msq"></span></button><div class="disp mtime" id="memtime">0:00</div><div class="meta">'+t('녹음하는 중… 다 말하면 눌러요')+'</div></div>';
  else if(s==='ready'||s==='uploading')h+='<div class="mrecwrap"><audio controls src="'+MemRec.url+'" style="width:100%"></audio><div class="row" style="gap:8px;width:100%"><button type="button" class="btn ghostbtn" data-a="memRecStart" style="height:50px;font-size:17px"'+(s==='uploading'?' disabled':'')+'>'+t('다시 녹음')+'</button><button type="button" class="btn orange" data-a="memUpload" style="height:50px;font-size:17px"'+(s==='uploading'?' disabled':'')+'>'+(s==='uploading'?t('올리는 중…'):t('올리기'))+'</button></div></div>';
@@ -2393,23 +2396,45 @@ function memLoadList(){
  if(!Cloud.user()){ui.mem.st.list=[];return;}
  api('GET','/recordings').then(function(d){if(view!=='memory'||!ui.mem||ui.mem.day!=='fri')return;ui.mem.st.list=d._status===200?d.recordings.filter(function(r){return r.verse===MEM.id;}):[];keepRender();},function(){if(ui.mem&&ui.mem.st)ui.mem.st.list=[];keepRender();});
 }
+/* Friday: the verse is shown for a while (longer verse, longer time), then disappears and the recorder appears */
+function memFriMs(){return Math.min(12000,Math.max(5000,3000+500*memWords().length));}
+function memFriStart(){
+ var st=ui.mem&&ui.mem.st;if(!st)return;clearTimeout(MemRec.ft);
+ st.phase='show';st.ms=memFriMs();keepRender();
+ MemRec.ft=setTimeout(function(){if(ui.mem&&ui.mem.st===st&&st.phase==='show'){st.phase='hide';keepRender();}},st.ms);
+}
 function memStopStream(){try{if(MemRec.stream)MemRec.stream.getTracks().forEach(function(tr){tr.stop();});}catch(e){}MemRec.stream=null;clearInterval(MemRec.timer);}
-function memStopAll(){stopTTS();if(MemRec.rec&&MemRec.rec.state==='recording'){try{MemRec.rec.onstop=null;MemRec.rec.stop();}catch(e){}}memStopStream();if(MemRec.audio){try{MemRec.audio.pause();}catch(e){}}MemRec.playing='';}
+function memStopAll(){stopTTS();clearTimeout(MemRec.wt);clearTimeout(MemRec.ft);if(MemRec.rec&&MemRec.rec.state==='recording'){try{MemRec.rec.onstop=null;MemRec.rec.stop();}catch(e){}}memStopStream();if(MemRec.audio){try{MemRec.audio.pause();}catch(e){}}MemRec.playing='';}
 function memPickMime(){var c=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'];if(!window.MediaRecorder||!MediaRecorder.isTypeSupported)return '';for(var i=0;i<c.length;i++)if(MediaRecorder.isTypeSupported(c[i]))return c[i];return '';}
 
 /* ---------- Monday: read aloud phrase by phrase ---------- */
+/* one word (or short text) read aloud when a child taps it; cancels whatever was being said */
+function memSay(txt){
+ if(!txt||!('speechSynthesis' in window))return;
+ try{ttsToken++;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(String(txt));u.lang=isEn()?'en-US':'ko-KR';u.rate=.85;
+  var vs=window.speechSynthesis.getVoices().filter(function(x){return x.lang&&x.lang.replace('_','-').indexOf(u.lang.slice(0,2))===0;});if(vs[0])u.voice=vs[0];
+  window.speechSynthesis.speak(u);}catch(e){}
+}
+/* Monday: listen to a phrase, then a quiet gap (length follows the phrase) for the child to say it back */
+function memWaitMs(p){var n=String(p).split(/\s+/).length;return Math.min(9000,3000+900*n);}
+function memNextPhrase(i,tok){
+ var st=ui.mem&&ui.mem.st;if(!st||tok!==ttsToken||view!=='memory')return;
+ clearTimeout(MemRec.wt);st.wait=-1;memSpeak(i+1,tok);
+}
 function memSpeak(i,tok){
  var ph=memPhrases();
  if(tok!==ttsToken||!ui.mem||view!=='memory')return;
- if(i>=ph.length){ui.mem.st.playing=-1;ui.mem.st.heard=true;keepRender();return;}
- var u=new SpeechSynthesisUtterance(ph[i]);u.lang=isEn()?'en-US':'ko-KR';u.rate=.8;
+ if(i>=ph.length){ui.mem.st.playing=-1;ui.mem.st.wait=-1;ui.mem.st.heard=true;keepRender();return;}
+ var st=ui.mem.st,u=new SpeechSynthesisUtterance(ph[i]);u.lang=isEn()?'en-US':'ko-KR';u.rate=.8;
  try{var vs=window.speechSynthesis.getVoices().filter(function(x){return x.lang&&x.lang.replace('_','-').indexOf(u.lang.slice(0,2))===0;});if(vs[0])u.voice=vs[0];}catch(e){}
- var moved=false,next=function(){if(moved)return;moved=true;setTimeout(function(){memSpeak(i+1,tok);},250);};
+ var moved=false,next=function(){if(moved||tok!==ttsToken)return;moved=true;
+  var ms=memWaitMs(ph[i]);st.wait=i;st.waitMs=ms;keepRender();
+  MemRec.wt=setTimeout(function(){memNextPhrase(i,tok);},ms);};
  u.onend=next;
  /* some devices never fire 'end' (no voice installed, iOS quirks): move on anyway */
  setTimeout(function(){if(ui.mem&&ui.mem.st.playing===i&&tok===ttsToken)next();},1500+ph[i].length*(isEn()?90:260));
- u.onerror=function(){if(tok===ttsToken){ui.mem.st.playing=-1;ui.mem.st.heard=true;keepRender();}};
- ui.mem.st.playing=i;keepRender();window.speechSynthesis.speak(u);
+ u.onerror=function(){if(tok===ttsToken){ui.mem.st.playing=-1;ui.mem.st.wait=-1;ui.mem.st.heard=true;keepRender();}};
+ st.wait=-1;st.playing=i;keepRender();window.speechSynthesis.speak(u);
 }
 
 function memComplete(code){
@@ -2453,7 +2478,7 @@ document.addEventListener('pointermove',function(e){
  var d=MemDrag;if(!d||e.pointerId!==d.id)return;
  if(!d.moved&&Math.abs(e.clientX-d.x)+Math.abs(e.clientY-d.y)<8)return;
  e.preventDefault();
- if(!d.moved){d.moved=true;var r=d.el.getBoundingClientRect();d.dx=d.x-r.left;d.dy=d.y-r.top;d.ghost=d.el.cloneNode(true);d.ghost.classList.add('ghost');d.ghost.style.width=r.width+'px';document.body.appendChild(d.ghost);d.el.classList.add('lifted');}
+ if(!d.moved){d.moved=true;var r=d.el.getBoundingClientRect();d.dx=d.x-r.left;d.dy=d.y-r.top;d.ghost=d.el.cloneNode(true);d.ghost.classList.add('ghost');d.ghost.style.width=r.width+'px';document.body.appendChild(d.ghost);d.el.classList.add('lifted');memSay(memWords()[+d.v]);}
  d.ghost.style.left=(e.clientX-d.dx)+'px';d.ghost.style.top=(e.clientY-d.dy)+'px';
  var over=memDropAt(e.clientX,e.clientY);[].forEach.call(document.querySelectorAll('.dropover'),function(x){if(x!==over)x.classList.remove('dropover');});if(over)over.classList.add('dropover');
 },{passive:false});
@@ -2476,7 +2501,7 @@ var MEM_ACTIONS={
   var day=v&&MEM_DAYS.indexOf(v)>=0?v:(wd>=1&&wd<=5?CODE[wd]:(MEM_DAYS.filter(function(c){return !memDone(c,d);})[0]||'fri'));
   if(!adminPreview()&&keyDate(memWeekOf(d)+'-'+day)>today())day=MEM_DAYS[today().getDay()-1]||'mon';
   ui.mem={day:day,date:d,from:fromQuiz?'quiz':view,qDate:ui.qDate,qCode:fromQuiz?day:null,st:memFresh(day)};
-  stopTTS();view='memory';window.scrollTo(0,0);render();if(day==='fri')memLoadList();
+  stopTTS();view='memory';window.scrollTo(0,0);render();if(day==='fri'){memLoadList();memFriStart();}
  },
  memBack:function(v){
   memStopAll();var m=ui.mem||{};ui.mem=null;
@@ -2487,24 +2512,26 @@ var MEM_ACTIONS={
    else{var c=document.getElementById('memcard');if(c)c.scrollIntoView({block:'center'});}}
   else go(m.from&&V[m.from]?m.from:'home');
  },
- memDay:function(v){if(!memDayOpen(v)){toast(t('아직 열리지 않았어요. 그날 만나요!'));return;}memStopAll();ui.mem.day=v;ui.mem.st=memFresh(v);ui.memDelArm='';keepRender();if(v==='fri')memLoadList();},
+ memDay:function(v){if(!memDayOpen(v)){toast(t('아직 열리지 않았어요. 그날 만나요!'));return;}memStopAll();ui.mem.day=v;ui.mem.st=memFresh(v);ui.memDelArm='';keepRender();if(v==='fri'){memLoadList();memFriStart();}},
+ memSkip:function(){var st=ui.mem&&ui.mem.st;if(!st||st.wait<0)return;memNextPhrase(st.wait,ttsToken);},
  memListen:function(){
   var st=ui.mem.st;
-  if(st.playing>=0){stopTTS();st.playing=-1;keepRender();return;}
+  if(st.playing>=0){stopTTS();clearTimeout(MemRec.wt);st.playing=-1;st.wait=-1;keepRender();return;}
   if(!('speechSynthesis' in window)){st.heard=true;toast(t('이 기기에서는 소리로 읽기를 지원하지 않아요'));keepRender();return;}
   stopTTS();memSpeak(0,ttsToken);
  },
  memFinish:function(v){if(v==='mon'&&!ui.mem.st.heard&&('speechSynthesis' in window)){toast(t('먼저 말씀을 들어 봐요'));return;}stopTTS();ui.mem.st.playing=-1;memComplete(v);keepRender();},
  memPick:function(v){
   if(ui.memNoClick)return;
-  var m=ui.mem;if(m.day==='thu'){memTry(v);return;}
+  var m=ui.mem;memSay(memWords()[+v]);if(m.day==='thu'){memTry(v);return;}
   m.st.sel=m.st.sel===+v?null:+v;keepRender();
   if(m.st.sel!==null){var open=memBlanks().filter(function(i){return !m.st.placed[i];});if(open.length===1)memTry(v,open[0]);}
  },
  memSlot:function(v){var st=ui.mem.st;if(st.sel===null){toast(t('아래 말씀 블록을 먼저 골라요'));return;}memTry(st.sel,v);},
- memReveal:function(v){var st=ui.mem.st;st.rev[+v]=true;keepRender();},
+ memReveal:function(v){var st=ui.mem.st;st.rev[+v]=true;memSay(memWords()[+v]);keepRender();},
  memHideAll:function(){ui.mem.st.rev={};keepRender();},
- memToggleVerse:function(){ui.mem.st.showVerse=!ui.mem.st.showVerse;keepRender();},
+ memFriHide:function(){var st=ui.mem.st;clearTimeout(MemRec.ft);st.phase='hide';keepRender();},
+ memPeek:function(){var st=ui.mem.st;st.peek=true;memFriStart();},
  memRecStart:function(){
   var st=ui.mem.st;st.err='';
   if(MemRec.audio){try{MemRec.audio.pause();}catch(e){}MemRec.playing='';}
