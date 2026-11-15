@@ -29,10 +29,12 @@ const ANSWER = {
     await p.click('[data-a=qm][data-v="3:1"]'); await p.click('[data-a=qm][data-v="3:2"]');
   },
   '2026-11-19': async p => {
+    ok(!(await p.$('#confcard')), 'Thursday: no confession card');
     await p.click('[data-a=qs][data-v="0:0"]'); await p.click('[data-a=qs][data-v="1:0"]'); await p.click('[data-a=qs][data-v="2:0"]');
     await p.click('[data-a=qw][data-v="3:1"]');
   },
   '2026-11-20': async p => {
+    ok(/먼저 사랑해 주셔서 감사해요/.test(await text(p, '#confcard')), 'Friday: the faith confession is shown after the questions');
     await p.click('[data-a=qs][data-v="0:2"]'); await input(p, '[data-qf="1:0"]', '불평했어요');
     await p.click('[data-a=qm][data-v="2:0"]'); await p.click('[data-a=qm][data-v="2:1"]');
   }
