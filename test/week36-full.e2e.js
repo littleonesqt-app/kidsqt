@@ -25,6 +25,7 @@ const ANSWER = {
     await p.click('[data-a=qw][data-v="3:2"]'); await p.click('[data-a=qw][data-v="3:0"]'); await p.click('[data-a=qw][data-v="3:1"]');
   },
   '2026-11-25': async p => {
+    ok(/거룩한 행실/.test(await text(p, '#qcard-1 .hintbox')) && !/도움말/.test(await text(p, '#qcard-1 > div:nth-of-type(2)')), 'Wednesday Q2: the hint is its own box, not part of the question text');
     await p.click('[data-a=qs][data-v="0:1"]'); await input(p, '#qt-1', '거룩하게 살라고 했을 거예요'); await p.click('[data-a=qs][data-v="2:0"]');
   },
   '2026-11-26': async p => {
