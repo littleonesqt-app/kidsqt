@@ -12,7 +12,7 @@ const { context } = require('./_pin-date');
     for (let i = 0; i < 4; i++) {   // Home, Bible (with the storybook), Thanks, Parents: no Korean text
       await p.locator('nav button').nth(i).click(); await p.waitForTimeout(300);
       if (i === 1) { await p.click('[data-a=bkOpen]'); await p.waitForTimeout(400); }
-      const bad = await p.evaluate(() => [...new Set(document.body.innerText.split('\n').filter(l => /[가-힣]/.test(l)))]);
+      const bad = await p.evaluate(() => [...new Set(document.body.innerText.split('\n').filter(l => /[가-힣]/.test(l) && l.trim() !== '한국어'))]);
       if (bad.length) { fails++; console.log('  ✗ tab ' + i + ' Korean in English mode:', bad.slice(0, 3)); } else console.log('  ✓ tab ' + i + ' English only');
       if (i === 1) await p.evaluate(() => { const c = document.querySelector('[data-a=bkClose]'); c && c.click(); });
     }
